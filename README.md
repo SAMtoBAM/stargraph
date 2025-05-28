@@ -5,11 +5,11 @@ A genome-graph based starship detection plugin to be combined with starfish
     <img src="https://github.com/SAMtoBAM/stargraph/blob/main/logo/stargraph.png" width=100%>
 </p>
 
-#[![Zenodo DOI](https://zenodo.org/badge/963417762.svg)](https://doi.org/10.5281/zenodo.15190276)
-[![Anaconda_version](https://anaconda.org/samtobam/fusemblr/badges/version.svg)](https://anaconda.org/samtobam/stargraph)
-[![Anaconda_platforms](https://anaconda.org/samtobam/fusemblr/badges/platforms.svg)](https://anaconda.org/samtobam/stargraph)
-[![Anaconda_downloads](https://anaconda.org/samtobam/fusemblr/badges/downloads.svg)](https://anaconda.org/samtobam/stargraph)
-[![Anaconda-Server Badge](https://anaconda.org/samtobam/fusemblr/badges/latest_release_date.svg)](https://anaconda.org/samtobam/stargraph)
+[![Zenodo DOI](###.svg)](###)
+[![Anaconda_version](https://anaconda.org/samtobam/stargraph/badges/version.svg)](https://anaconda.org/samtobam/stargraph)
+[![Anaconda_platforms](https://anaconda.org/samtobam/stargraph/badges/platforms.svg)](https://anaconda.org/samtobam/stargraph)
+[![Anaconda_downloads](https://anaconda.org/samtobam/stargraph/badges/downloads.svg)](https://anaconda.org/samtobam/stargraph)
+[![Anaconda-Server Badge](https://anaconda.org/samtobam/stargraph/badges/latest_release_date.svg)](https://anaconda.org/samtobam/stargraph)
 
 **_stargraph_** is a tool that detects _Starship_-like regions (SLRs) using a genome-graph based and combines this with results from the more conservative tool ```starfish``` <br/>
 The combination of both tools provides a more comprehensive view of genomic regions impacted by _Starships_
