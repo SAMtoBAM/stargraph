@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="170mm"
+   height="40mm"
+   viewBox="0 0 170 40"
+   version="1.1"
+   id="svg185549"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="stargraph_logo.svg"
+   inkscape:export-filename="/home/samslaptop/CHPC_scratch/projects/genomegraphs/stargraph/stargraph_logo.png"
+   inkscape:export-xdpi="1000"
+   inkscape:export-ydpi="1000"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview185551"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.0179639"
+     inkscape:cx="391.46771"
+     inkscape:cy="157.66767"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g333081" />
+  <defs
+     id="defs185546" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g333021"
+       transform="matrix(5.3677565,0,0,7.1048781,-486.87536,-1206.5197)">
+      <g
+         id="g333081"
+         transform="matrix(1.4008505,0,0,1,-42.735675,0)">
+        <path
+           style="fill:none;stroke:#616161;stroke-width:0.3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 95.620881,172.90231 c 3.938345,-0.0301 4.765649,-2.14057 8.853389,-2.17129"
+           id="path205804-3-0"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#616161;stroke-width:0.3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 95.620881,172.90231 c 4.849269,0.41522 5.916629,2.14231 10.991599,2.17304"
+           id="path205804-0-3-3"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#616161;stroke-width:0.3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 117.60407,172.90231 c -4.84926,0.41522 -5.91662,2.14231 -10.99159,2.17304"
+           id="path205804-0-3-3-8"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:none;stroke:#616161;stroke-width:0.3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 117.6041,172.90231 c -3.93835,-0.0301 -4.76566,-2.14057 -8.8534,-2.17129"
+           id="path205804-9-3-1"
+           sodipodi:nodetypes="cc" />
+      </g>
+    </g>
+    <g
+       id="g207311-6-4-7"
+       transform="matrix(6.1188141,0,0,7.1048781,-566.50546,-1052.9135)">
+      <rect
+         style="fill:#e5e5e5;fill-opacity:1;stroke:#000000;stroke-width:0.0454998;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect185652-8-0-7-28"
+         width="21.089018"
+         height="2.9145677"
+         x="95.99572"
+         y="148.49063"
+         ry="0.65575331" />
+      <text
+         xml:space="preserve"
+         style="font-size:4.94185px;line-height:1.25;font-family:sans-serif;stroke-width:0.0808176;stroke-miterlimit:4;stroke-dasharray:none"
+         x="106.55727"
+         y="151.13794"
+         id="text189187-4-7-2"><tspan
+           sodipodi:role="line"
+           id="tspan189185-8-5-99"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.94185px;font-family:Dhurjati;-inkscape-font-specification:Dhurjati;text-align:center;text-anchor:middle;fill:#737373;fill-opacity:1;stroke:#000000;stroke-width:0.0808176;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           x="106.55727"
+           y="151.13794">STARGRAPH</tspan></text>
+    </g>
+    <path
+       id="rect385801"
+       style="fill:#e5e5e5;fill-opacity:1;stroke:#000000;stroke-width:0.28;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+       d="m 2.7439209,12.405086 v 19.325411 c 1.27333,-0.800506 2.11616,-2.217219 2.11616,-3.838481 V 16.243568 c 0,-1.621262 -0.84283,-3.038046 -2.11616,-3.838482 z" />
+    <path
+       id="rect385801-0"
+       style="fill:#e5e5e5;fill-opacity:1;stroke:#000000;stroke-width:0.28;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+       d="m 168.04508,12.405086 v 19.325411 c -1.27333,-0.800506 -2.11617,-2.217219 -2.11617,-3.838481 V 16.243568 c 0,-1.621262 0.84284,-3.038046 2.11617,-3.838482 z" />
+  </g>
+</svg>
