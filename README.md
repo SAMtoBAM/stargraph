@@ -40,7 +40,7 @@ Using the tool requires 7 steps: <br/>
 To help with building genome-graphs each contig for each assembly needs sample/haplotype information stored in the header <br/>
 To do this we use the PanSN-specifications (explained in detail [here](https://github.com/pangenome/PanSN-spec)): <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][haplotype_id][delim][contig/scaffold_name] <br/>
-e.g. For a sample/strain called CEA10 of haplotype 1 and a contig called 'CP097570.1' using the "#" seperator (recommended as it is rarely used anywhere else in sample names etc): <br/>
+e.g. For a sample/strain called CEA10 of haplotype 1 and a contig called 'CP097570.1' using the "#" separator (recommended as it is rarely used anywhere else in sample names etc): <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	>CEA10#1#CP097570.1  <br/>
 _Note If you do not have haplotypes just put '1' is this space for all samples_ <br/>
 
