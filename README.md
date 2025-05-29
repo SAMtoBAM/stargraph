@@ -47,21 +47,21 @@ _Note If you do not have haplotypes just put '1' is this space for all samples_ 
 This PanSN-spec naming modification needs to be done for all assemblies in your dataset <br/>
 For assemblies directly downloaded from NCBI, the trailing information (e.g. 'Aspergillus fumigatus CEA10 chromosome 8') after the contig accession can be left as is and will be ignored (due to the space seperation from the contig name) <br/>
 
-Following this you need to create a txt file containing a path per line to each of the PanSN-spec renamed assemblies <br/>
+Following this you need to create a txt file (e.g.  _assemblies_panSN.txt_) containing one path per line to each of the PanSN-spec renamed assemblies <br/>
 And voila, the primary input required for ```stargraph``` is ready. <br/>
-Feed this _assemblies_panSN.txt_ file to ```stargraph``` (-a).
+Feed this _assemblies_panSN.txt_ file to ```stargraph```; input parameter ```-a | --assemblies```.
 
 
 # STEP 0. Running starfish first (wrapper included)
 
 ```stargraph``` requires some ```starfish``` input in order to run in its entirety <br/>
 This includes: <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (usually can use: _'geneFinder/\*.filt.gff'_) <br/> 
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (```stargraph``` input parameter ```-r | --tyrRs```) <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (usually can use: _'elementFinder/\*.elements.ann.feat'_) <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (```stargraph``` input parameter ```-e | --elements```) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'geneFinder/\*.filt.gff'_) <br/> 
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-r | --tyrRs```) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'elementFinder/\*.elements.ann.feat'_) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-e | --elements```) <br/>
 
 Therefore ```starfish``` needs to be run first <br/>
 To do so you will need to create a starfish environment (clashes with the stargraph environment made it impossible to combine...) <br/>
