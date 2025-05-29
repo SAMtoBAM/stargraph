@@ -19,10 +19,10 @@ As ```stargraph``` requies ```starfish``` input; The ```starfish``` pipeline sho
 
 ### Pipeline
 Using the tool requires 7 steps: <br/>
--1 -- 0 Preprocessing/Set up: <br/>
+-1 --> 0 Preprocessing/Set up: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;-1: Preprocessing of input assembly data <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 0: Running ```starfish``` <br/>
-&nbsp;1 -- 5 ```stargraph```: <br/>
+&nbsp;1 --> 5 ```stargraph```: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 1: Generating a genome-graph <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 2: Identifying Presence/Absence Variants (PAVs) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 3: Elevating PAVs to _Starship_-like regions, identifying 'haplotypes' and plotting insertion sites <br/>
