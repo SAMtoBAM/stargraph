@@ -2,7 +2,7 @@
 A genome-graph based starship detection plugin to be combined with starfish
 
 <p align="center" >
-    <img src="https://github.com/SAMtoBAM/stargraph/blob/main/logo/stargraph.png" width=100%>
+    <img src="https://github.com/SAMtoBAM/stargraph/blob/main/logo/stargraph_logo.png" width=100%>
 </p>
 
 [![Zenodo DOI](###.svg)](###)
