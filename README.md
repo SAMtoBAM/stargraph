@@ -56,8 +56,12 @@ Feed this _assemblies_panSN.txt_ file to ```stargraph``` (-a).
 
 ```stargraph``` requires some ```starfish``` input in order to run in its entirety <br/>
 This includes: <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs (usually can use: _'geneFinder/\*.filt.gff'_) (parameter ```-r | --tyrRs```) <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) (usually can use: _'elementFinder/\*.elements.ann.feat'_) (parameter ```-e | --elements```) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (usually can use: _'geneFinder/\*.filt.gff'_) <br/> 
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (```stargraph``` input parameter ```-r | --tyrRs```) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (usually can use: _'elementFinder/\*.elements.ann.feat'_) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; (```stargraph``` input parameter ```-e | --elements```) <br/>
 
 Therefore ```starfish``` needs to be run first <br/>
 To do so you will need to create a starfish environment (clashes with the stargraph environment made it impossible to combine...) <br/>
