@@ -11,11 +11,11 @@ A genome-graph based starship detection plugin to be combined with starfish
 [![Anaconda_downloads](https://anaconda.org/samtobam/stargraph/badges/downloads.svg)](https://anaconda.org/samtobam/stargraph)
 [![Anaconda-Server Badge](https://anaconda.org/samtobam/stargraph/badges/latest_release_date.svg)](https://anaconda.org/samtobam/stargraph)
 
-**_stargraph_** is a tool that detects _Starship_-like regions (SLRs) using a genome-graph based and combines this with results from the more conservative tool ```starfish``` <br/>
-The combination of both tools provides a more comprehensive view of genomic regions impacted by _Starships_
+**_stargraph_** is a tool that detects _Starship_-like regions (SLRs) using a genome-graph based approach and combines this with results from the more conservative tool ```starfish``` <br/>
+The combination of both tools provides a comprehensive view of genomic regions impacted by _Starships_
 
-**_stargraph_** requires only the same input as ```starfish``` and some ```starfish``` output and therefore can be used easily in conjunction <br/>
-As ```stargraph``` requies ```starfish``` input; The ```starfish``` pipeline should be run first in order to feed ```stargraph``` with both tyrosine recombinase (TyrR) and _Starship_ positions.
+**_stargraph_** requires the same input as ```starfish``` and some ```starfish``` output <br/>
+As ```stargraph``` requies ```starfish``` input; The ```starfish``` pipeline should be run first in order to feed ```stargraph``` with both tyrosine recombinase (TyrR) and _Starship_ positions. See Step 0.
 
 ### Pipeline
 Using the tool requires 7 steps: <br/>
@@ -40,8 +40,8 @@ Using the tool requires 7 steps: <br/>
 To help with building genome-graphs each contig for each assembly it helps if sample information is stored in the header <br/>
 To do this we can use the PanSN-specifications (explained in detail [here](https://github.com/pangenome/PanSN-spec)): <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][haplotype_id][delim][contig/scaffold_name] <br/>
-HOWEVER; we will use a simplified version of this (to help with starfish compatability) where we leave out the (usually in my case) uninformative haplotype information <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; Therefore just: [sample_name][delim][contig/scaffold_name]
+HOWEVER; we will use a simplified version of this (to help with starfish compatability) where we leave out the (usually in my case) uninformative haplotype information. Therefore just: <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][contig/scaffold_name] <br/>
 e.g. For a sample/strain called CEA10 and a contig called 'CP097570.1' using the "#" separator (recommended as it is rarely used anywhere else in sample names etc): <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	>CEA10#CP097570.1  <br/>
 _Note If you do have haplotypes you can just modify the sample name to show this_ <br/>
@@ -65,16 +65,17 @@ This includes: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'elementFinder/\*.elements.ann.feat'_) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-e | --elements```) <br/>
 
-Therefore ```starfish``` needs to be run first <br/>
-To do so you will need to create a starfish environment (clashes with the stargraph environment made it impossible to combine...) <br/>
-You can follow the starfish tutorials for installation and running; provided on the [github/wiki](https://github.com/egluckthaler/starfish) <br/>
+Therefore ```starfish``` needs to be run first (installed in stargraph environment) <br/>
+You can follow the starfish tutorials running; provided on the [github/wiki](https://github.com/egluckthaler/starfish) <br/>
+Or <br/>
 To simplify running ```starfish``` and ensure compatability etc: you can use the wrapper ```starfish_wrapper.sh``` provided by ```stargraph``` <br/>
-The wrapper runs the primary steps required with default parameters <br/>
+The wrapper runs the primary steps required with most default parameters <br/>
 In this case the input used will be the same list of paths to the PanSN-spec-like renamed assemblies as used for ```stargraph``` e.g. _assemblies_panSN.txt_
 
 	starfish_wrapper.sh -a assemblies_panSN.txt
 
-The final wrapper output includes a set of putative _Starships_. These need to be manually validated using the pair-viz output.
+The final wrapper output includes a set of putative _Starships_. These need to be manually validated with the pair-viz outputs. <br/>
+NEED TO DETAILS ON HOW TO SET ASIDE A MANUALLY VALIDATED SET
 
 # STEP 1-5 Running stargraph
 
