@@ -1,0 +1,48 @@
+package:
+  name: stargraph
+  version: "1.0.0"  # Change this to your desired version
+
+source:
+  git_url: https://github.com/samtobam/stargraph.git
+  git_rev: main
+   
+build:
+  number: 0 # Increment with each new build
+  scripts:
+    - bin/starfish
+    - bin/cnef
+
+requirements:
+  build:
+  - conda-forge::gxx_linux-64
+  - make
+  - git
+
+  run:
+  - bioconda::pggb=0.7.4
+  - bioconda::bedtools=2.31.1
+  - bioconda::mash=2.3
+  - bioconda::seqkit=2.10.0
+  - bioconda::minimap2=2.29
+  - bioconda::mummer4=4.0.1
+  - conda-forge::r-base
+  - conda-forge::r-gggenomes
+  - samtools=1.6
+  - bioconda::sourmash>=4.9.0
+  - bioconda::blast=2.16.0
+  - bioconda::mcl=14.137
+  - bioconda::circos=0.69.9
+  - bioconda::hmmer=3.4
+  - bioconda::metaeuk=7.bba0d80
+  - conda-forge::mafft=7.526
+  - bioconda::mmseqs2=17.b804f
+  - bioconda::eggnog-mapper
+
+
+test:
+  commands:
+    - "stargraph.sh --help"
+
+about:
+  home: "https://github.com/samtobam/stargraph"
+  summary: "Genome-graph based Starship detection tool"
