@@ -20,7 +20,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: stargraph
-        python-version: 3.12.10  # Specify the version of Python you need
+        python-version: 3.12  # Specify the version of Python you need
         auto-activate-base: true
       # This step sets up Miniconda with a specific Python version.
 
