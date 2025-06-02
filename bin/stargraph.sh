@@ -11,7 +11,7 @@ version="v1"
 ## TRIED INSTALLING STARFISH IN THE SAME ENVIRONMENT BUT THE DEPENDENCIES AND NAMING MAKE IT IMPOSSIBLE ESSENTIALLY...
 ## therefore the starfish portion has to be run outside of stargraph and only input from that pipeline will be accepted
 
-##starfish (egluckthaler::starfish) NOT USED
+##starfish (egluckthaler::starfish) NOT USED (trying to install it directly with the stargraph conda env)
 ##pggb/odgi (bioconda::pggb)
 ##bedtools (bioconda::bedtools)
 ##mash	(bioconda::mash)
@@ -19,10 +19,23 @@ version="v1"
 ##minimap2 (biocojnda::minimap2)
 ##mummer4 (bioconda::mummer4)
 ##R (conda-forge::r-base) NOT USED NOW
-##gggenomes (conda-forge::r-gggenomes)
+##gggenomes (conda-forge::r-gggenomes) NOT USED NOW
+
+
+##starfish conda packages
+##samtools (upgrading) samtools=1.6 (should not impact other tools)
+##sourmash bioconda::sourmash
+##blast bioconda::blast
+##mcl bioconda::mcl=14.137 (MOST RECENT VERSION IS MUCH MORE RECENT, THEREFORE SPECIFYING)
+##circos bioconda::circos
+##hmmer bioconda::hmmer
+##metaeuk bioconda::metaeuk (A DIFFERENT VERSION THAN SPECIFIED, SHOULDN'T CHANGE ANYTHING; BUT STARFISH VERSION IS INCOMPATIBLE)
+##mafft conda-forge::mafft
+##mmseqs2 bioconda::mmseqs2 (MUCH LATER VERSION OF TOOL THAN SPECIFIC IN STARFISH ENV; ONE SPECIFIED BY STARFISH IS INCOMPATIBLE)
+##eggnog-mapper bioconda::eggnog-mapper
 
 ##created initially as such
-#mamba create -n stargraph bioconda::pggb bioconda::bedtools bioconda::mash bioconda::seqkit bioconda::minimap2 bioconda::mummer4 conda-forge::r-base conda-forge::r-gggenomes
+#mamba create -n stargraph bioconda::pggb bioconda::bedtools bioconda::mash bioconda::seqkit bioconda::minimap2 bioconda::mummer4 samtools=1.6 bioconda::sourmash bioconda::blast bioconda::mcl=14.137 bioconda::circos bioconda::hmmer bioconda::metaeuk conda-forge::mafft bioconda::mmseqs2 bioconda::eggnog-mapper
 
 
 ##tried installing a starfish joint env but it does not jive
@@ -42,7 +55,7 @@ threads="1"
 identity=""
 length="20000"
 kmersize="19"
-separator="#"
+separator="_"
 minsize="30000"
 prefix="stargraph"
 
@@ -125,7 +138,7 @@ case "$key" in
 	stargraph.sh -a assemblies_panSN.txt
 	
 	Required inputs:
-	-a | --assemblies		A txt file with each line containing the path to an assembly using the PanSN-spec naming scheme for each contig
+	-a | --assemblies		A txt file with each line containing the path to an assembly using the PanSN-spec-like naming scheme for each contig ([sample][delim][contig/scaffold])
 	-r | --tyrRs			Output file from starfish annotate that contains locations for the tyrosine recombinases in all assemblies (geneFinder/*.filt.gff)
 	-e | --elements			Output file from starfish insert (preferably manually curated) that contains locations for the Starships (elementFinder/*.elements.ann.feat)
 
@@ -140,7 +153,7 @@ case "$key" in
 
 
 	Optional parameters:
-	-s | --separator		PanSN-spec naming separator used (Default: #)
+	-s | --separator		PanSN-spec-like naming separator used (Default: _)
 	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
 	-p | --prefix			Prefix for output (Default: stargraph)
 	-o | --output			Name of output folder for all results (Default: stargraph_output)
@@ -159,7 +172,7 @@ done
 #[[ $tyrRs == "" ]] && echo "ERROR: No file containing tyrosine recombinases locations was given" && exit
 #[[ $elements == "" ]] && echo "ERROR: No file containing Starship elements locations was given" && exit
 
-[[ $separator == "#" ]] && echo "WARNING: Running with default separator '#' (this is recommended but just a heads up)"
+[[ $separator == "_" ]] && echo "WARNING: Running with default separator '_' (this is recommended but just a heads up)"
 [[ $identity == "" ]] && echo "WARNING: Running with no identity given and therefore will calculate divergence using mash distance (this is recommended but just a heads up)"
 [[ $threads == "1" ]] && echo "WARNING: Running with default thread count; depending on the dataset this may take some time"
 
