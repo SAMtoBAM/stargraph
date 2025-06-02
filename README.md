@@ -42,8 +42,8 @@ To do this we can use the PanSN-specifications (explained in detail [here](https
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][haplotype_id][delim][contig/scaffold_name] <br/>
 HOWEVER; we will use a simplified version of this (to help with starfish compatability) where we leave out the (usually in my case) uninformative haplotype information. Therefore just: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][contig/scaffold_name] <br/>
-e.g. For a sample/strain called CEA10 and a contig called 'CP097570.1' using the "#" separator (recommended as it is rarely used anywhere else in sample names etc): <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	>CEA10#CP097570.1  <br/>
+e.g. For a sample/strain called CEA10 and a contig called 'CP097570.1' using the "_" separator (recommended due to compatability with starfish runs and less used in naming schemes): <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	>CEA10_CP097570.1  <br/>
 _Note If you do have haplotypes you can just modify the sample name to show this_ <br/>
 
 This PanSN-spec-like naming modification needs to be done for all assemblies in your dataset <br/>
