@@ -318,7 +318,7 @@ grep -f <(comm -23 <(cut -f1 geneFinder_tyr/${prefix}.filt.ids | sort) <(grep -P
 ## now visualise the loci
 #mkdir locusViz
 ## add gc content information to be used by the locus visualisation
-$CONDA_PREFIX/aux/seq-gc.sh -Nbw 1000 blastdb/${prefix}.assemblies.fna > ${prefix}.assemblies.gcContent_w1000.bed
+$CONDA_PREFIX/aux/seq-gc.sh -Nbw 1000 blastdb/${prefix}.assemblies.fa > ${prefix}.assemblies.gcContent_w1000.bed
 #rm blastdb/${prefix}.assemblies.fna
 
 #starfish locus-viz -T 2 -m region -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${prefix} -o locusViz/ -A nucmer -r regionFinder/${prefix}.fog3.d600000.m1.regions.txt -d regionFinder/${prefix}.fog3.d600000.m1.dereplicated.txt -j regionFinder/${prefix}.fog3.d600000.m1.haplotype_jaccard.sim  -g ome2consolidatedGFF.txt --tags geneFinder_tyr/${prefix}.filt_intersect.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
@@ -354,12 +354,30 @@ starfish pair-viz -m all -t empty -T ${threads} -A nucmer -a ome2assembly.txt -b
 ##now we have all the locations and their starships, but what about visualising the elements and all their regions
 ##pick the flanking size in kb
 mkdir elementViz_${flank2}kbflank
-##run the element visualisation by navis grouping (to see if haplotypes are truely different etc)
-##to do this the list of elements given is the order of the plot, therefore sort by haplotype and locusViz region
+
+##first go through all the naves and identify which ones have multiple elements
+##create a list of those and then loop through that list to create the locus-viz element plots
+
 cat elementFinder/${prefix}.elements.ann.feat | cut -f2,3 | awk -F "-" '{print $1}' | sort -u | while read set
 do
-##new name for the set
 set2=$( echo ${set} | awk '{print $1"-"$2}'  )
+
+##now get the haplotypes associated with each element and sort the elements using this (doesn't change anything...?)
+elementcount=$( grep "${set}" elementFinder/${prefix}.elements.ann.feat | wc -l )
+if [[ ${elementcount} -gt 1 ]]
+then
+echo "${set}"
+fi
+
+done > elementViz_${flank2}kbflank/naves_list.txt
+
+
+##run the element visualisation by navis grouping (to see if haplotypes are truely different etc)
+##to do this the list of elements given is the order of the plot, therefore sort by haplotype and locusViz region
+cat elementViz_${flank2}kbflank/naves_list.txt | while read set
+do
+##new name for the set
+set2=$( echo "${set}" | awk '{print $1"-"$2}'  )
 
 ##get the list of element names per family-navis clade
 #grep "${set}" elementFinder/${prefix}.elements.ann.feat | cut -f1 | while read element
@@ -378,7 +396,8 @@ done > elementViz_${flank2}kbflank/${set2}.list
 
 ##then use locuz-viz with in 'element' mode
 #starfish locus-viz -T 2 -m element -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${set2} -U ${flank} -D ${flank} -l elementViz_${flank2}kbflank/${set2}.list  -o elementViz_${flank}kbflank/ -A nucmer -r regionFinder/${prefix}.fog3.d600000.m1.regions.txt -d regionFinder/${prefix}.fog3.d600000.m1.dereplicated.txt -j regionFinder/${prefix}.fog3.d600000.m1.haplotype_jaccard.sim  -g ome2consolidatedGFF.txt --tags geneFinder_tyr/${prefix}.filt_intersect.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
-starfish locus-viz -T 2 -m element -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${set2} -U ${flank} -D ${flank} -l elementViz_${flank2}kbflank/${set2}.list  -o elementViz_${flank}kbflank/ -A nucmer -g ome2GFF.txt --tags geneFinder_tyr/${prefix}.filt.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
+
+starfish locus-viz -T 2 -m element -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${set2} -U ${flank} -D ${flank} -l elementViz_${flank2}kbflank/${set2}.list  -o elementViz_${flank2}kbflank/ -A nucmer -g ome2GFF.txt --tags geneFinder_tyr/${prefix}.filt.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
 
 done
 
