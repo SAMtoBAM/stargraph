@@ -27,6 +27,7 @@ requirements:
   - bioconda::mummer4=4.0.1
   - conda-forge::r-base
   - conda-forge::r-gggenomes
+  - conda-forge::r-svglite
   - samtools=1.6
   - bioconda::sourmash>=4.9.0
   - bioconda::blast=2.16.0
