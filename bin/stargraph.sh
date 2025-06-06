@@ -57,6 +57,8 @@ length="20000"
 kmersize="19"
 separator="_"
 minsize="30000"
+window="1000"
+poaparam="7919,8069"
 prefix="stargraph"
 
 output="stargraph_output"
@@ -105,6 +107,11 @@ case "$key" in
 	shift
 	shift
 	;;
+	-G|--poaparam)
+	poaparam="$2"
+	shift
+	shift
+	;;
 	-s|--separator)
 	separator="$2"
 	shift
@@ -112,6 +119,11 @@ case "$key" in
 	;;
 	-m|--minsize)
 	minsize="$2"
+	shift
+	shift
+	;;
+	-w|--window)
+	window="$2"
 	shift
 	shift
 	;;
@@ -150,11 +162,13 @@ case "$key" in
 	-i | --identity			-p option in pggb (Default: Automatically calulated using mash distances)
 	-l | --length			-s option in pggb (Default: 20000 ; a conservative value increased from default pggb values)
 	-k | --kmersize			-k option in pggb (Default: 19 ; same as pggb)
+	-G | --poaparam			-G option in pggb (Default: 7919,8069; a conservative value increased from default pggb values)
 
 
 	Optional parameters:
 	-s | --separator		PanSN-spec-like naming separator used (Default: _)
 	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
+	-w | --window			Size of windows used for PAV detection (Default: 1000)
 	-p | --prefix			Prefix for output (Default: stargraph)
 	-o | --output			Name of output folder for all results (Default: stargraph_output)
 	-c | --cleanup			Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
@@ -204,7 +218,8 @@ cd ${output}
 ##newly defining some variables for output writing
 ## leave minimum PAV size as is just setting to kb for some output variables
 minsize2=$( echo ${minsize} | awk '{print $1/1000}' )
-
+## leave window size size as is just setting to kb for some output variables
+window2=$( echo ${window} | awk '{print $1/1000}' )
 
 #####################################################################
 ################# STEP 1: CREATING THE GENOME GRAPH #################
@@ -240,7 +255,7 @@ genomecount=$( cat path_to_assemblies.txt | wc -l )
 samtools faidx ${prefix}.assemblies.fa.gz
 
 ##now build the genome graph
-pggb -i ${prefix}.assemblies.fa.gz -o ${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator}
+pggb -i ${prefix}.assemblies.fa.gz -o ${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam}
 
 ##move in the output folder so we can try use this graph to extract Starship regions
 cd ${prefix}.pggb
@@ -258,12 +273,12 @@ cd ${prefix}.pggb
 ##first we need to generate a file that associates each path (contigs) with a sample (which in our case is always the first string, split by the separator, in the contig name)
 ##we wil extract this directly from the odgi file just to be sure
 odgi paths -i ${prefix}.assemblies.fa.gz.*.smooth.final.og -L > ${prefix}.paths.txt
-cut -f 1 -d '#' ${prefix}.paths.txt > ${prefix}.samples.txt
+cat ${prefix}.paths.txt | awk -F "${separator}" '{print $1}' > ${prefix}.samples.txt
 paste ${prefix}.paths.txt ${prefix}.samples.txt > ${prefix}.path_and_sample.txt
 
 ##Now you can just use bins as done for coverage analysis and then give this to the pav analysis
-##here I use a 1kb window
-bedtools makewindows -g <(cut -f 1,2 ../${prefix}.assemblies.fa.gz.fai) -w 1000 | sed 's/\t0\t/\t1\t/g' > ${prefix}.assemblies.w1kb.bed
+##here I use the window parameter setting for creating the window size in a bed file that will be analysed for presence/absence
+bedtools makewindows -g <(cut -f 1,2 ../${prefix}.assemblies.fa.gz.fai) -w ${window} | sed 's/\t0\t/\t1\t/g' > ${prefix}.assemblies.w${window2}kb.bed
 odgi pav -i ${prefix}.assemblies.fa.gz.*.smooth.final.og -b ${prefix}.assemblies.w1kb.bed -M -p ${prefix}.path_and_sample.txt > temp
 
 ##extract the header, sort the PAV rows then recombine
@@ -319,17 +334,51 @@ done >> ${prefix}.PAVs.${minsize2}kb_min.stats.tsv
 
 ##this step requires starfish data input
 ##it will use de-novo annotation of captains (and possibly more starship related genes) in order to predict whether regions are starship-like regions
+##it will use all Starship-related genes (SRGs) given initially to identify all PAVs with SRGs present
+##each line is a element and an associated SRG
+echo "contig;start;end;SRG_name;SRG_start;SRG_end;SRG_length;SRG_sense" | tr ';' '\t' > ${prefix}.PAVs.all_SRGs.tsv
+cat ${prefix}.PAVs.tsv | while read element
+do
+sample=$( echo "${element}" | awk -F "${separator}" '{print $1}' )
+contig=$( echo "${element}" | awk -F "\t" '{print $1}' )
+start=$( echo "${element}" | awk -F "\t" '{print $2}' )
+end=$( echo "${element}" | awk -F "\t" '{print $3}' )
+cat ${tyrRs} | awk -v contig="$contig" -v start="$start" -v end="$end" -v element="$element" -v sample="$sample" '{if($1 == contig && $4 > start && $5 < end) {print contig"\t"start"\t"end"\t"$4"\t"$5"\t"$6"\t"$7"\t"$9}}'
+done | awk -F "Name=" '{print $1"\t"$NF}' | awk '{print $1"\t"$2"\t"$3"\t"$9"\t"$4"\t"$5"\t"$6"\t"$7}' >> ${prefix}.PAVs.all_SRGs.tsv
 
-##need to specify that the tyr tag in the gff file is the the genes to be used for identifying the high-confidence SLRs
+##next the list will be culled down to important SRGs (if there is any distinction to be made)
+##need to specify that the 'tyr' tag in the gff file is the the genes to be used for identifying the high-confidence SLRs
+##if "tyr" is not given then just all the SRGs given
+##will also reduce this list down to a single line per element
+echo "SLR;contig;start;end" | tr ';' '\t' > ${prefix}.SLRs.tsv
+captains=$( cat ${prefix}.PAVs.all_SRGs.tsv | awk '{if($4 ~ "_tyr") print "present"}' | sort -u )
+if [[ $captains == "present" ]]
+then
+tail -n+2 ${prefix}.PAVs.all_SRGs.tsv | awk '{if($4 ~ "_tyr") print $1"\t"$2"\t"$3}' | sort -u | awk -F "${separator}" '{print $1"\t"$0}' | awk -v count="1" '{if(element == "") {element=$2$3$4; print $1"_SLR"count"\t"$2"\t"$3"\t"$4} else if(element==$2$3$4) {print $1"_SLR"count"\t"$2"\t"$3"\t"$4} else if(element!=$2$3$4) {element=$2$3$4; print $1"_SLR"count"\t"$2"\t"$3"\t"$4; count++}}' >> ${prefix}.SLRs.tsv
+else
+tail -n+2 ${prefix}.PAVs.all_SRGs.tsv | awk '{print $1"\t"$2"\t"$3}' | sort -u | awk -F "${separator}" '{print $1"\t"$0}' | awk -v count="1" '{if(element == "") {element=$2$3$4; print $1"_SLR"count"\t"$2"\t"$3"\t"$4} else if(element==$2$3$4) {print $1"_SLR"count"\t"$2"\t"$3"\t"$4} else if(element!=$2$3$4) {element=$2$3$4; print $1"_SLR"count"\t"$2"\t"$3"\t"$4; count++}}' >> ${prefix}.SLRs.tsv
+fi 
+
+##now get each SLR and aggregate the SRGs associated with it
+echo "SLR;contig;start;end;SRG_name;SRG_start;SRG_end;SRG_length;SRG_sense" | tr ';' '\t' > ${prefix}.SLRs.plus_SRGs.tsv
+tail -n+2 ${prefix}.SLRs.tsv | while read line
+do
+SLR=$( echo "${line}" | awk '{print $1}' )
+contig=$( echo "${line}" | awk '{print $2}' )
+start=$( echo "${line}" | awk '{print $3}' )
+end=$( echo "${line}" | awk '{print $4}' )
+cat ${prefix}.PAVs.all_SRGs.tsv | awk -v SLR="$SLR" -v contig="$contig" -v start="$start" -v end="$end" '{if(contig == $1 && start == $2 && end == $3) {srgname=srgname";"$4 ; srgstart=srgstart";"$5; srgend=srgend";"$6; srgsense=srgsense";"$7 }} END{print SLR"\t"contig"\t"start"\t"end"\t"srgname"\t"srgstart"\t"srgend"\t"srgsense}'
 
 
-##identify lower confidence SLRs using, i.e. regions not containing a captain but containing other Starship-related genes
-
-
+##create a fasta file with just the PAVs
+tail -n+2 ${prefix}.SLRs.tsv | awk '{print $2":"$3"-"$4}' | while read region
+do
+samtools faidx ../${prefix}.assemblies.fa.gz "${region}"
+done > ${prefix}.SLRs.fa
 
 ##we can use mash again to find which SLRs are within 90% similarity
 ##we can then use this clustering in order to identify 'haplotypes' like with starfish and therefore plot haplotype alignments/insertions below
-
+mash dist -i ${prefix}.SLRs.fa ${prefix}.SLRs.fa | awk '{if($1 != $2) print $1"\t"$2"\t"$3}' > ${prefix}.SLRs.mash_dist.tsv
 
 
 

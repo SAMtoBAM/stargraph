@@ -205,10 +205,10 @@ mkdir geneFinder_duf3723/
 starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/duf3723.hmm -P $CONDA_PREFIX/db/duf3723.mycoDB.faa -i duf3723 -o geneFinder_duf3723/
 mkdir geneFinder_fre/
 starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/fre.hmm -P $CONDA_PREFIX/db/fre.mycoDB.faa -i fre -o geneFinder_fre/
-mkdir geneFinder_nlr/
-starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/nlr.hmm -P $CONDA_PREFIX/db/nlr.mycoDB.faa -i nlr -o geneFinder_nlr/
-mkdir geneFinder_plp/
-starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/plp.hmm -P $CONDA_PREFIX/db/plp.mycoDB.faa -i plp -o geneFinder_plp/
+#mkdir geneFinder_nlr/
+#starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/nlr.hmm -P $CONDA_PREFIX/db/nlr.mycoDB.faa -i nlr -o geneFinder_nlr/
+#mkdir geneFinder_plp/
+#starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/plp.hmm -P $CONDA_PREFIX/db/plp.mycoDB.faa -i plp -o geneFinder_plp/
 mkdir geneFinder_myb/
 starfish annotate -T ${threads} -s ${separator} -x ${prefix} -a ome2assembly.txt -p $CONDA_PREFIX/db/myb.hmm -P $CONDA_PREFIX/db/myb.SRG.fa -i myb -o geneFinder_myb/
 
@@ -355,6 +355,13 @@ starfish pair-viz -m all -t empty -T ${threads} -A nucmer -a ome2assembly.txt -b
 ##pick the flanking size in kb
 mkdir elementViz_${flank2}kbflank
 
+##create another txt file with a path to the gff file containing all SRGs (not just the tyrs)
+##this will be used in the plot
+realpath ${prefix}.filt.SRGs_combined.gff | awk -v prefix="$prefix" '{print prefix"\t"$0}' > ome2GFF2.txt
+##also combine ids of the SRGs too
+cat geneFinder_*/${prefix}.filt.ids > ${prefix}.filt.SRGs_combined.filt.ids
+
+
 ##first go through all the naves and identify which ones have multiple elements
 ##create a list of those and then loop through that list to create the locus-viz element plots
 
@@ -391,13 +398,13 @@ set2=$( echo "${set}" | awk '{print $1"-"$2}'  )
 grep "${set}" elementFinder/${prefix}.elements.ann.feat | cut -f1 | while read element
 do
 haplotype=$( grep ${element} elementFinder/${prefix}.element.navis-hap.mcl | awk '{print $1}' )
-echo ${element}";"${haplotype} | tr ';' '\t' | sort -k2 
-done > elementViz_${flank2}kbflank/${set2}.list
+echo ${element}";"${haplotype}
+done | tr ';' '\t' | sort -k2 > elementViz_${flank2}kbflank/${set2}.list
 
 ##then use locuz-viz with in 'element' mode
 #starfish locus-viz -T 2 -m element -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${set2} -U ${flank} -D ${flank} -l elementViz_${flank2}kbflank/${set2}.list  -o elementViz_${flank}kbflank/ -A nucmer -r regionFinder/${prefix}.fog3.d600000.m1.regions.txt -d regionFinder/${prefix}.fog3.d600000.m1.dereplicated.txt -j regionFinder/${prefix}.fog3.d600000.m1.haplotype_jaccard.sim  -g ome2consolidatedGFF.txt --tags geneFinder_tyr/${prefix}.filt_intersect.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
 
-starfish locus-viz -T 2 -m element -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${set2} -U ${flank} -D ${flank} -l elementViz_${flank2}kbflank/${set2}.list  -o elementViz_${flank2}kbflank/ -A nucmer -g ome2GFF.txt --tags geneFinder_tyr/${prefix}.filt.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
+starfish locus-viz -T 2 -m element -a ome2assembly.txt -b elementFinder/${prefix}.elements.bed -x ${set2} -U ${flank} -D ${flank} -l elementViz_${flank2}kbflank/${set2}.list  -o elementViz_${flank2}kbflank/ -A nucmer -g ome2GFF2.txt --tags ${prefix}.filt.SRGs_combined.filt.ids --gc ${prefix}.assemblies.gcContent_w1000.bed
 
 done
 
@@ -409,7 +416,8 @@ ls elementViz_${flank2}kbflank/*.R | while read script
 do
 element=$( echo $script | awk -F "/" '{print $NF}' | awk -F "." '{print $1}' )
 ##modify the Rscript so that the legend is printed at the top and adjusting the width by adding twice the flanking length for each edge
-sed 's/geom_gene_tag/theme(legend.position = "top")+geom_gene_tag/g' $script | sed "s/regionSeqs\$length/regionSeqs\$length+${flank3}/g" > elementViz_${flank2}kbflank/${element}.mod.R
+##also change some colours
+sed 's/geom_gene_tag/theme(legend.position = "top")+geom_gene_tag/g' $script | sed "s/regionSeqs\$length/regionSeqs\$length+${flank3}/g" | sed 's/\"tyr\" = \"\#ff0000\"/\"tyr\" = \"\#ff3000\"/g' | sed 's/\"nlr\" = \"\#048dfb\"/\"myb\" = \"\blue\"/g' | sed 's/d37/duf3723/g'  > elementViz_${flank2}kbflank/${element}.mod.R
 Rscript elementViz_${flank2}kbflank/${element}.mod.R
 done
 
