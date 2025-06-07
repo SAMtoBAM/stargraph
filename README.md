@@ -5,7 +5,7 @@ A genome-graph based starship detection plugin to be combined with starfish
     <img src="https://github.com/SAMtoBAM/stargraph/blob/main/logo/stargraph_logo.png" width=100%>
 </p>
 
-[![Zenodo DOI](###.svg)](###)
+[![Zenodo DOI](https://zenodo.org/badge/992224579.svg)](https://zenodo.org/badge/)
 [![Anaconda_version](https://anaconda.org/samtobam/stargraph/badges/version.svg)](https://anaconda.org/samtobam/stargraph)
 [![Anaconda_platforms](https://anaconda.org/samtobam/stargraph/badges/platforms.svg)](https://anaconda.org/samtobam/stargraph)
 [![Anaconda_downloads](https://anaconda.org/samtobam/stargraph/badges/downloads.svg)](https://anaconda.org/samtobam/stargraph)
