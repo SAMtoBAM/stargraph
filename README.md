@@ -77,6 +77,10 @@ In this case the input used will be the same list of paths to the PanSN-spec-lik
 	starfish_wrapper.sh -a assemblies_panSN.txt
 
 The final wrapper output includes a set of putative _Starships_. These need to be manually validated with the pair-viz outputs. <br/>
+
+Additional steps in the wrapper include the _de-novo_ detection of DUF3723 and MYB/SANT genes associated with _Starships_ to be used in _Starship_ and SLR visualisation <br/>
+These annotations are combined in the output file XXXXXXXX
+
 NEED TO DETAILS ON HOW TO SET ASIDE A MANUALLY VALIDATED SET
 
 # STEP 1-5 Running stargraph
