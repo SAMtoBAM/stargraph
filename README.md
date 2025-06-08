@@ -8,7 +8,7 @@
 [![Anaconda_downloads](https://anaconda.org/samtobam/stargraph/badges/downloads.svg)](https://anaconda.org/samtobam/stargraph)
 [![Anaconda-Server Badge](https://anaconda.org/samtobam/stargraph/badges/latest_release_date.svg)](https://anaconda.org/samtobam/stargraph)
 
-**_stargraph_** is a tool that detects _Starship_-like regions (SLRs) using a genome-graph based approach and combines this with _Starship_ results from the more conservative tool ```[starfish](https://github.com/egluckthaler/starfish)``` <br/>
+**_stargraph_** is a tool that detects _Starship_-like regions (SLRs) using a genome-graph based approach and combines this with _Starship_ results from the more conservative tool [starfish](https://github.com/egluckthaler/starfish) <br/>
 The combination of both tools provides a comprehensive view of genomic regions impacted by _Starships_
 
 **_stargraph_** requires the same input as ```starfish``` and some ```starfish``` output <br/>
