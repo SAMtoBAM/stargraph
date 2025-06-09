@@ -46,8 +46,8 @@ gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1
   gggenomes::sync() %>%
   gggenomes::pick() %>%
   gggenomes::flip() +
-  geom_link(aes(fill=map_match/map_length) ,colour="black", alpha=0.5, offset = 0.05, size=0.1 )+
-  scale_fill_gradientn(colours=c("grey100","grey75", "grey50"), name ="Identity", labels=c(.80,0.90,1), breaks=c(0.80,0.90,1), limits = c(0.8, 1))+
+  geom_link(aes(fill=((map_match/map_length)*100)) ,colour="black", alpha=0.5, offset = 0.05, size=0.1 )+
+  scale_fill_gradientn(colours=c("grey100","grey75", "grey50"), name ="Identity (%)", labels=c(80,90,100), breaks=c(80,90,100), limits = c(80, 100))+
   new_scale_fill()+
   geom_seq(linewidth = 0.5)+
   geom_feat(color="red", alpha=.6, linewidth=3)+
@@ -55,7 +55,7 @@ gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1
   geom_seq_label(aes(label=label))+
   geom_seq_label(aes(label=SLR), nudge_y = -.25)+
   geom_gene_tag(aes(label=label), size = 2, nudge_y=0.1, check_overlap = FALSE)+
-  scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"))+
+  scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"), name = NULL)+
   theme(legend.position="top", legend.box = "horizontal")
 
 ##save plot as variable so can save it
@@ -63,8 +63,8 @@ plot=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_lengt
   gggenomes::sync() %>%
   gggenomes::pick() %>%
   gggenomes::flip() +
-  geom_link(aes(fill=map_match/map_length) ,colour="black", alpha=0.5, offset = 0.05, size=0.1 )+
-  scale_fill_gradientn(colours=c("grey100","grey75", "grey50"), name ="Identity", labels=c(.80,0.90,1), breaks=c(0.80,0.90,1), limits = c(0.8, 1))+
+  geom_link(aes(fill=((map_match/map_length)*100)) ,colour="black", alpha=0.5, offset = 0.05, size=0.1 )+
+  scale_fill_gradientn(colours=c("grey100","grey75", "grey50"), name ="Identity (%)", labels=c(80,90,100), breaks=c(80,90,100), limits = c(80, 100))+
   new_scale_fill()+
   geom_seq(linewidth = 0.5)+
   geom_feat(color="red", alpha=.6, linewidth=3)+
@@ -72,7 +72,7 @@ plot=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_lengt
   geom_seq_label(aes(label=label))+
   geom_seq_label(aes(label=SLR), nudge_y = -.25)+
   geom_gene_tag(aes(label=label), size = 2, nudge_y=0.1, check_overlap = FALSE)+
-  scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"))+
+  scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"), name = NULL)+
   theme(legend.position="top", legend.box = "horizontal")
 
 
