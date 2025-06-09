@@ -28,6 +28,8 @@ requirements:
   - conda-forge::r-base
   - conda-forge::r-gggenomes
   - conda-forge::r-svglite
+  - bioconda::bioconductor-iranges
+  - conda-forge::r-ggnewscale
   - samtools=1.6
   - bioconda::sourmash>=4.9.0
   - bioconda::blast=2.16.0
