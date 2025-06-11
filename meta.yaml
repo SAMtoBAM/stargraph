@@ -22,7 +22,6 @@ requirements:
   - bioconda::pggb=0.7.4
   - bioconda::bedtools=2.31.1
   - bioconda::mash=2.3
-  - sourmash_plugin_branchwater=0.9.13
   - bioconda::seqkit=2.10.0
   - bioconda::minimap2=2.29
   - bioconda::mummer4=4.0.1
