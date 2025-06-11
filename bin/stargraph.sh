@@ -419,7 +419,7 @@ echo "SLR;contig;start;end;cluster" | tr ';' '\t' > ${prefix}.SLRs.plus_clusters
 cat ${prefix}.SLRs.tsv | while read line
 do
 SLR=$( echo "${line}" | awk '{print $1}' )
-cat ${prefix}.SLRs.mash_distances.mcl.clusters.txt | awk -v SLR="$SLR" -v line="$line" '{if($2==SLR) print line"\t"$1}'
+cat ${prefix}.SLRs.sig.pairwise.mcl.clusters.txt| awk -v SLR="$SLR" -v line="$line" '{if($2==SLR) print line"\t"$1}'
 done >> ${prefix}.SLRs.plus_clusters.tsv
 
 cd ..
