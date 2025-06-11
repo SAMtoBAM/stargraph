@@ -161,7 +161,7 @@ case "$key" in
 	
 	stargraph (version: ${version})
  
-	stargraph.sh -a assemblies_panSN.txt
+	stargraph.sh -a assemblies_panSN.txt -r starfish_output/geneFinder/*.filt.gff -e starfish_output/elementFinder/*.elements.ann.feat
 	
 	Required inputs:
 	-a | --assemblies		A txt file with each line containing the path to an assembly using the PanSN-spec-like naming scheme for each contig ([sample][delim][contig/scaffold])
@@ -403,15 +403,17 @@ coords=$( echo "${line}" | awk '{print $2":"$3"-"$4}' )
 samtools faidx ../${prefix}.assemblies.fa.gz "${coords}" | awk -v SLR="$SLR" '{if($0 ~ ">") {print ">"SLR} else {print}}'
 done > ${prefix}.SLRs.fa
 
-##we can use mash again to find which SLRs are within 95% similarity
-##we can then use this clustering in order to identify 'haplotypes' like with starfish and therefore plot haplotype alignments/insertions below
-mash triangle -s 10000 -i ${prefix}.SLRs.fa ${prefix}.SLRs.fa -E | sort -u | awk -F "\t" '{if($1 != $2) print}' > ${prefix}.SLRs.mash_distances.txt
-##we can take the mash distance estiamtes, convert to ANI and reduce to a network coherent bed file and remove any links in the network below 95% (replacing with 0s)
-cat ${prefix}.SLRs.mash_distances.txt | awk -F "\t"  '{if(((1-$3)*100) > 95) {print $1"\t"$2"\t"(1-$3)*100} else {print $1"\t"$2"\t0"}}' > ${prefix}.SLRs.mash_distances.trim.tsv
+##we can use mash again to find which SLRs are clustering together based on overlapping kmers
+##sourmash alternative, sketch the signatures (giving a small scalling value (100bp level of detection), small kmer, and sketch for each nucleotide sequence in the file)
+sourmash sketch dna -p scaled=100,k=21 ${prefix}.SLRs.fa --singleton -o ${prefix}.SLRs.sig
+##now compare it against itself using 'containment' as the metrix (this allows us to easily find smaller elements nested within larger ones)
+sourmash compare ${prefix}.SLRs.sig --containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
+##convert to pairwise comparisons
+cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
-mcl ${prefix}.SLRs.mash_distances.trim.tsv --abc -o ${prefix}.SLRs.mash_distances.mcl.txt
+mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
-awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.SLRs.mash_distances.mcl.txt > ${prefix}.SLRs.mash_distances.mcl.clusters.txt
+awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.SLRs.mash_distances.mcl.txt > ${prefix}.SLRs.sig.pairwise.mcl.clusters.txt
 
 echo "SLR;contig;start;end;cluster" | tr ';' '\t' > ${prefix}.SLRs.plus_clusters.tsv
 cat ${prefix}.SLRs.tsv | while read line
