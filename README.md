@@ -83,20 +83,33 @@ NEED TO DETAILS ON HOW TO SET ASIDE A MANUALLY VALIDATED SET
 # STEP 1-5 Running stargraph
 
  
-	stargraph.sh -a assemblies_panSN.txt
+	stargraph.sh -a assemblies_panSN.txt -r starfish_output/geneFinder/*.filt.gff -e starfish_output/elementFinder/*.elements.ann.feat
 	
 	Required inputs:
-	-a | --assemblies	XXXX
+	-a | --assemblies		A txt file with each line containing the path to an assembly using the PanSN-spec-like naming scheme for each contig ([sample][delim][contig/scaffold])
+	-r | --tyrRs			Output file from starfish annotate that contains locations for the tyrosine recombinases in all assemblies (geneFinder/*.filt.gff)
+	-e | --elements			Output file from starfish insert (preferably manually curated) that contains locations for the Starships (elementFinder/*.elements.ann.feat)
+
 
 	Recommended inputs:
-	-X | --XXXX		XXXX
-	-t | --threads		Number of threads for tools that accept this option (default: 1)
-	
+	-t | --threads			Number of threads for tools that accept this option (default: 1)
+	-i | --identifier		The identifying tag used for tyrosine recombinases; given as the -i option for starfish annotate (Default: tyr)
+
+	pggb specific inputs:
+	-i | --identity			-p option in pggb (Default: Automatically calulated using mash distances)
+	-l | --length			-s option in pggb (Default: 20000 ; a conservative value increased from default pggb values)
+	-k | --kmersize			-k option in pggb (Default: 19 ; same as pggb)
+	-G | --poaparam			-G option in pggb (Default: 7919,8069; a conservative value increased from default pggb values)
+
 	Optional parameters:
-	-X | --XXXX  XXXX
-	-p | --prefix		Prefix for output (default: name of assembly file (-a) before the fasta suffix)
-	-o | --output		Name of output folder for all results (default: fusemblr_output)
-	-c | --cleanup		Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
-	-h | --help		Print this help message
+	-s | --separator		PanSN-spec-like naming separator used (Default: _)
+	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
+	-w | --window			Size of windows used for PAV detection (Default: 1000)
+	-f | --flank			Size of flanking region used when plotting element alignments (Default: 75000)
+	-p | --prefix			Prefix for output (Default: stargraph)
+	-o | --output			Name of output folder for all results (Default: stargraph_output)
+	-c | --cleanup			Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
+	-h | --help			Print this help message
+
 
 XXXXX
