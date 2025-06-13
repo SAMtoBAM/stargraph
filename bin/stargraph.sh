@@ -15,6 +15,7 @@ version="v1"
 ##pggb/odgi (bioconda::pggb)
 ##bedtools (bioconda::bedtools)
 ##mash	(bioconda::mash)
+##sourmash plugin (conda-forge::sourmash_plugin_branchwater) sourmash is already required with starfish
 ##seqkit (bioconda::seqkit)
 ##minimap2 (biocojnda::minimap2)
 ##mummer4 (bioconda::mummer4)
@@ -55,6 +56,7 @@ assemblies=""
 tyrRs=""
 elements=""
 threads="1"
+identifier="tyr"
 identity=""
 length="20000"
 kmersize="19"
@@ -275,10 +277,10 @@ genomecount=$( cat path_to_assemblies.txt | wc -l )
 samtools faidx ${prefix}.assemblies.fa.gz
 
 ##now build the genome graph
-pggb -i ${prefix}.assemblies.fa.gz -o ${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam}
+pggb -i ${prefix}.assemblies.fa.gz -o 1.${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam}
 
 ##move in the output folder so we can try use this graph to extract Starship regions
-cd ${prefix}.pggb
+cd 1.${prefix}.pggb
 
 
 ################################################################################
@@ -352,15 +354,15 @@ cd ..
 ################################################################################
 
 
-mkdir PAVs_to_SLRs
-cd PAVs_to_SLRs
+mkdir 2.PAVs_to_SLRs
+cd 2.PAVs_to_SLRs
 
 ##this step requires starfish data input
 ##it will use de-novo annotation of captains (and possibly more starship related genes) in order to predict whether regions are starship-like regions
 ##it will use all Starship-related genes (SRGs) given initially to identify all PAVs with SRGs present
 ##each line is a element and an associated SRG
 echo "contig;start;end;SRG_name;SRG_start;SRG_end;SRG_length;SRG_sense" | tr ';' '\t' > ${prefix}.PAVs.all_SRGs.tsv
-cat ../${prefix}.pggb/${prefix}.PAVs.${minsize2}kb_min.tsv | while read element
+cat ../1.${prefix}.pggb/${prefix}.PAVs.${minsize2}kb_min.tsv | while read element
 do
 sample=$( echo "${element}" | awk -F "${separator}" '{print $1}' )
 contig=$( echo "${element}" | awk -F "\t" '{print $1}' )
@@ -428,8 +430,8 @@ cd ..
 ################# STEP 3b: GENERATING SLR PLOTS ###################
 ###################################################################
 
-mkdir SLR_plots
-cd SLR_plots
+mkdir 3.SLR_plots
+cd 3.SLR_plots
 
 ##first create a simplified bed file for the annotations
 ##create header for annotations
@@ -439,18 +441,18 @@ cat ${tyrRspath} | awk -F "\t" '{print $1"\t"$4"\t"$5"\t"$7"\t"$9}' | awk -F ";N
 
 
 ##loop through each cluster defined previously to get a list of the SLRs and a list of genomes missing these elements to be used as an insertion site
-tail -n+2 ../PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | cut -f5 | sort -u | while read cluster
+tail -n+2 ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | cut -f5 | sort -u | while read cluster
 do
 
 ##get the SLRs
-cat ../PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) {print $1}}' > ${cluster}.list.txt
+cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) {print $1}}' > ${cluster}.list.txt
 
 ##get the genomes missed these SLRs
-cat ../PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) print}' | while read line
+cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) print}' | while read line
 do
 SLR=$( echo "${line}" | awk '{print $1}'  )
 position=$( echo "${line}" | awk '{print $2"\t"$3"\t"$4}'  )
-cat ../${prefix}.pggb/${prefix}.PAVs.${minsize2}kb_min.tsv | grep "${position}" | awk '{print $4}' | tr ';' '\n' | while read absent
+cat ../1.${prefix}.pggb/${prefix}.PAVs.${minsize2}kb_min.tsv | grep "${position}" | awk '{print $4}' | tr ';' '\n' | while read absent
 do
 cat ${cluster}.list.txt | awk -F "${separator}" -v absent="$absent" -v hold="absent" '{if($1 == absent) {hold="present"}} END{if(hold=="absent") print absent}' 
 done > ${cluster}.absent.txt
@@ -472,9 +474,9 @@ fi
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.tsv
 cat ${cluster}.list.txt | while read SLR
 do
-contig=$( cat ../PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $2}' )
+contig=$( cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $2}' )
 contiglength=$( cat ../${prefix}.assemblies.fa.gz.fai | awk -v contig="$contig" '{if($1 == contig) print $2}' )
-cat ../PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" -v flank="$flank" '{if($1 == SLR) print $2"\t"$3-flank"\t"$4+flank}' | awk '{if($2 < 0 ) {print $1"\t1\t"$3} else {print}}' | awk -v SLR="$SLR" -v contiglength="$contiglength" '{if($3 > contiglength ) {print $1"\t"$2"\t"contiglength"\t"SLR} else {print $0"\t"SLR}}'
+cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" -v flank="$flank" '{if($1 == SLR) print $2"\t"$3-flank"\t"$4+flank}' | awk '{if($2 < 0 ) {print $1"\t1\t"$3} else {print}}' | awk -v SLR="$SLR" -v contiglength="$contiglength" '{if($3 > contiglength ) {print $1"\t"$2"\t"contiglength"\t"SLR} else {print $0"\t"SLR}}'
 done >> ${cluster}.regions_plus_flank.tsv
 tail -n+2 ${cluster}.regions_plus_flank.tsv  | while read line
 do
@@ -488,8 +490,8 @@ done
 ##take just one of the SLRs in the cluster; one with the largest sum of flank lengths on either side or the largest (only one if they are equal)
 topSLR=$( cat ${cluster}.list.txt | while read SLR
 do
-start=$( cat ../PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $3}' )
-end=$( cat ../PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $4}' )
+start=$( cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $3}' )
+end=$( cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $4}' )
 
 startmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" -v start="$start" '{if($4 == SLR) print start-$2}' )
 endmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" -v end="$end" '{if($4 == SLR) print $3-end}' )
@@ -552,7 +554,7 @@ tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v topSLR="$topSLR" '{if($4 !=
 
 ##create a simple bed file for the SLRs regions
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.SLRs.bed
-cat ../PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="${cluster}" '{if($5 == cluster) {print $2"\t"$3"\t"$4"\t"$1}}' >> ${cluster}.SLRs.bed
+cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="${cluster}" '{if($5 == cluster) {print $2"\t"$3"\t"$4"\t"$1}}' >> ${cluster}.SLRs.bed
 
 
 
@@ -569,13 +571,13 @@ paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $
 ##automate the production of an R script using gggenomes to plot the alignment
 ##then use gggenome with R script to create the plots
 Rscriptpath=$( which gggenomes_skeleton.R )
-cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/SLR_plots|g" > ${cluster}.R
+cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/3.SLR_plots|g" > ${cluster}.R
 Rscript ${cluster}.R
 
 done
 
 
-
+cd ..
 
 ##########################################################################
 ################# STEP 4: COMBINING SLRs AND STARSHIPS ###################
@@ -588,11 +590,11 @@ done
 ##Step 2: filter out any remaining SLR region smaller than the initial SLR minimum size
 ##Step 3: rename the remaining SLRs if split by starships into several smaller SLRs (above the minimum size)
 
-mkdir SLR_starship_combination
-cd SLR_starship_combination
+mkdir 4.SLR_starship_combination
+cd 4.SLR_starship_combination
 
 ##for this we digest the starship and SLR positions into two bed files for the filtering
-tail -n+2 ../PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv  | cut -f1-4 | awk '{print $2"\t"$3"\t"$4"\t"$1}' > ${prefix}.SLRs.bed
+tail -n+2 ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv  | cut -f1-4 | awk '{print $2"\t"$3"\t"$4"\t"$1}' > ${prefix}.SLRs.bed
 tail -n+2 ${elementspath} | cut -f1,4,6-7 | awk '{print $2"\t"$3"\t"$4"\t"$1}' > ${prefix}.starships.bed
 
 
@@ -659,20 +661,6 @@ bedtools getfasta -name -bed ${prefix}.starships_SLRs.bed -fi ../${prefix}.assem
 ######################################################################################################################################################################################################################################
 ######################################################################################################################################################################################################################################
 ######################################################################################################################################################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
