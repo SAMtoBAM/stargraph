@@ -460,7 +460,6 @@ done
 
 ###extract the SLRs PLUS the flanking regions around them into a single fasta for alignment (this will be used to identify a good region to visualise the insertion)
 ##also extract the full contigs in which the SLRs are found (this will be used for the actual alignment)
-rm ${cluster}.regions_plus_flank.fa
 if [ -f ${cluster}.regions_plus_flank.fa ]
 then
 rm ${cluster}.regions_plus_flank.fa
