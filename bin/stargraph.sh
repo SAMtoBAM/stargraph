@@ -415,7 +415,7 @@ cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=N
 ##now use mcl to quickly find the clusters
 mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
-awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.SLRs.mash_distances.mcl.txt > ${prefix}.SLRs.sig.pairwise.mcl.clusters.txt
+awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.SLRs.sig.pairwise.mcl.txt > ${prefix}.SLRs.sig.pairwise.mcl.clusters.txt
 
 echo "SLR;contig;start;end;cluster" | tr ';' '\t' > ${prefix}.SLRs.plus_clusters.tsv
 cat ${prefix}.SLRs.tsv | while read line
