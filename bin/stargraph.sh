@@ -55,6 +55,7 @@ assemblies=""
 tyrRs=""
 elements=""
 threads="1"
+identifier="tyr"
 identity=""
 length="20000"
 kmersize="19"
@@ -575,7 +576,7 @@ Rscript ${cluster}.R
 done
 
 
-
+cd ..
 
 ##########################################################################
 ################# STEP 4: COMBINING SLRs AND STARSHIPS ###################
