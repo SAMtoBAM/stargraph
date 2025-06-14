@@ -77,7 +77,7 @@ case "$key" in
 
     Recommended inputs:
     -g | --gff3             A gff3 file from the same assemblies with the same panSN-spec contig namings (contig names need to correspond)
-    -t | --threads          Number of threads for tools that accept this option (default: 1)
+    -t | --threads          Number of threads for tools that accept this option (Default: 1)
 
     starfish specific inputs:
     -f | --flank            Size of flanking regions either side of element used during elementViz (Default: 50000)
@@ -86,7 +86,7 @@ case "$key" in
     -s | --separator        PanSN-spec naming separator used (Default: _)
     -p | --prefix           Prefix for output (Default: starfish)
     -o | --output           Name of output folder for all results (Default: starfish_output)
-    -c | --cleanup          Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
+    -c | --cleanup          Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (Default: 'yes')
     -h | --help         Print this help message
 
     "
