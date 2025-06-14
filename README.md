@@ -25,6 +25,9 @@ Using the tool requires 7 steps: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 3: Elevating PAVs to _Starship_-like regions, identifying 'haplotypes' and plotting insertion sites <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 4: Combining SLRs with _Starships_ to generate a non-redundant dataset <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 5: Generating alignments and Network analyses <br/>
+&nbsp;6 --> 7 additional stargraph modules: <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 6: ```allstars``` to classify newly found elements by similarity to a database of described/named elements  <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 7: ```cargobay``` use a database of public fungal assemblies to find evidence of HGT  <br/>
 
  
 # Easy installation
@@ -58,7 +61,7 @@ Feed this _assemblies_panSN.txt_ file to ```stargraph```; input parameter ```-a 
 ```stargraph``` requires some ```starfish``` input in order to run in its entirety <br/>
 This includes: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'geneFinder/\*.filt.gff'_) <br/> 
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'geneFinder/\*.filt.gff'_ ) <br/> 
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-r | --tyrRs```) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'elementFinder/\*.elements.ann.feat'_) <br/>
@@ -76,23 +79,27 @@ In this case the input used will be the same list of paths to the PanSN-spec-lik
 The final wrapper output includes a set of putative _Starships_. These need to be manually validated with the pair-viz outputs. <br/>
 
 Additional steps in the wrapper include the _de-novo_ detection of DUF3723 and MYB/SANT genes associated with _Starships_ to be used in _Starship_ and SLR visualisation <br/>
-These annotations are combined in the output file XXXXXXXX
+These annotations are combined in the output file _starfish_output/${prefix}.filt.SRGs_combined.gff_ (best input for stargraph --tyrRs )
 
 NEED TO DETAILS ON HOW TO SET ASIDE A MANUALLY VALIDATED SET
 
 # STEP 1-5 Running stargraph
+
+stargraphs initial module will find _Starship_-like regions and combine them with _Starships_ <br/>
+To do this combine the list of assembly paths with: <br/>
+the tyrosine recombinase annotations (_starfish_output/geneFinder/\*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_  | --tyrRs) <br/>
+the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_ | --elements)
 
  
 	stargraph.sh -a assemblies_panSN.txt -r starfish_output/geneFinder/*.filt.gff -e starfish_output/elementFinder/*.elements.ann.feat
 	
 	Required inputs:
 	-a | --assemblies		A txt file with each line containing the path to an assembly using the PanSN-spec-like naming scheme for each contig ([sample][delim][contig/scaffold])
-	-r | --tyrRs			Output file from starfish annotate that contains locations for the tyrosine recombinases in all assemblies (geneFinder/*.filt.gff)
-	-e | --elements			Output file from starfish insert (preferably manually curated) that contains locations for the Starships (elementFinder/*.elements.ann.feat)
-
+	-r | --tyrRs			Output file from starfish annotate that contains locations for the tyrosine recombinases in all assemblies (_starfish_output/geneFinder/*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_ )
+	-e | --elements			Output file from starfish insert (preferably manually curated) that contains locations for the Starships (_starfish_output/elementFinder/*.elements.ann.feat_)
 
 	Recommended inputs:
-	-t | --threads			Number of threads for tools that accept this option (default: 1)
+	-t | --threads			Number of threads for tools that accept this option (Default: 1)
 	-i | --identifier		The identifying tag used for tyrosine recombinases; given as the -i option for starfish annotate (Default: tyr)
 
 	pggb specific inputs:
@@ -108,8 +115,10 @@ NEED TO DETAILS ON HOW TO SET ASIDE A MANUALLY VALIDATED SET
 	-f | --flank			Size of flanking region used when plotting element alignments (Default: 75000)
 	-p | --prefix			Prefix for output (Default: stargraph)
 	-o | --output			Name of output folder for all results (Default: stargraph_output)
-	-c | --cleanup			Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
+	-c | --cleanup			Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (Default: 'yes')
 	-h | --help			Print this help message
 
 
-XXXXX
+The final output stargraph_output/${prefix}.starships_SLRs.tsv contains the final results of stargraph
+
+
