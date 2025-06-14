@@ -122,3 +122,14 @@ the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_
 The final output stargraph_output/${prefix}.starships_SLRs.tsv contains the final results of stargraph
 
 
+# STEP 6 Running allstars
+
+Use the allstars module in order to classify your elements using a manually curated database of named elements (_db/named_starships_database.curated.fa_)
+
+	allstars.sh -e stargraph_output/${prefix}.starships_SLRs.fa -l $CONDA_PREFIX/db/named_starships_database.curated.fa
+
+# STEP 7 Running cargobay
+
+Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species 
+
+	cargobay.sh -e stargraph_output/${prefix}.starships_SLRs.fa 
