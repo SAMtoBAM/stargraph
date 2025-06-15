@@ -9,7 +9,8 @@
 [![Anaconda-Server Badge](https://anaconda.org/samtobam/stargraph/badges/latest_release_date.svg)](https://anaconda.org/samtobam/stargraph)
 
 **_stargraph_** is a tool that detects _Starship_-like regions (SLRs) using a genome-graph based approach and combines this with _Starship_ results from the more conservative tool [starfish](https://github.com/egluckthaler/starfish) <br/>
-The combination of both tools provides a comprehensive view of genomic regions impacted by _Starships_
+The combination of both tools provides a comprehensive view of genomic regions impacted by _Starships_ <br/>
+**_stargraph_** requires a minimum of two contiguous long-read assemblies in order to identify these _Starship_ and _Starship_-like regions
 
 **_stargraph_** requires the same input as ```starfish``` and some ```starfish``` output <br/>
 As ```stargraph``` requies ```starfish``` input; The ```starfish``` pipeline should be run first in order to feed ```stargraph``` with both tyrosine recombinase (TyrR) and _Starship_ positions. See Step 0.
@@ -37,18 +38,14 @@ Using the tool requires 7 steps: <br/>
 
 # STEP -1. Preprocessing of input assembly data
 
-To help with building genome-graphs each contig for each assembly it helps if sample information is stored in the header <br/>
-To do this we can use the PanSN-specifications (explained in detail [here](https://github.com/pangenome/PanSN-spec)): <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][haplotype_id][delim][contig/scaffold_name] <br/>
-HOWEVER; we will use a simplified version of this (to help with starfish compatability) where we leave out the (usually in my case) uninformative haplotype information. Therefore just: <br/>
+To help with building genome-graphs (and starfish compatability) it helps if sample information is stored in the header of each contig for each assembly <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	[sample_name][delim][contig/scaffold_name] <br/>
-e.g. For a sample/strain called CEA10 and a contig called 'CP097570.1' using the "_" separator: <br/>
+e.g. The fasta header for a contig called 'CP097570.1' from a sample/strain called CEA10 using the underscore as a delimiter: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;	>CEA10_CP097570.1  <br/>
 The '\_' underscore is highly recommended due to compatability with starfish/other tools and lower frequency in names/use than other separators. <br/>
 And just to be sure; the separator (use the underscore please) cannot be in the sample or contig/scaffold name <br/>
-_Note: If you do have haplotypes you can just modify the sample name to show this_ <br/>
 
-This PanSN-spec-like naming modification needs to be done for all assemblies in your dataset <br/>
+This [PanSN-spec-like](https://github.com/pangenome/PanSN-spec) naming modification needs to be done for all assemblies in your dataset <br/>
 For assemblies directly downloaded from NCBI, the trailing information (e.g. 'Aspergillus fumigatus CEA10 chromosome 8') after the contig accession can be left as is and will be ignored (due to the space seperation from the contig name) <br/>
 
 Following this you need to create a txt file (e.g.  _assemblies_panSN.txt_) containing one path per line to each of the PanSN-spec-like renamed assemblies <br/>
@@ -61,10 +58,10 @@ Feed this _assemblies_panSN.txt_ file to ```stargraph```; input parameter ```-a 
 ```stargraph``` requires some ```starfish``` input in order to run in its entirety <br/>
 This includes: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'geneFinder/\*.filt.gff'_ ) <br/> 
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use:_starfish_output/geneFinder/\*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_ ) <br/> 
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-r | --tyrRs```) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'elementFinder/\*.elements.ann.feat'_) <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'starfish_output/elementFinder/\*.elements.ann.feat'_) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-e | --elements```) <br/>
 
 Therefore ```starfish``` needs to be run first (installed in stargraph environment) <br/>
