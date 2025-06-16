@@ -628,11 +628,13 @@ done >> ${prefix}.SLRs.starships_subtracted.tyrRs_agg.tsv
 
 ##now combined this file with an equivalent file for starships
 echo "starship_SLR;navis-haplotype;contig;start;end;size;captain;captain_start;captain_end;captain_sense" | tr ';' '\t' > ${prefix}.starships_SLRs.tsv
-cat ${elementspath} | awk '{print $1"\t"$3"\t"$4"\t"$6"\t"$7"\t"$7-$6"\t"$5}' | while read line
+
+tail -n+2 ${elementspath} | awk '{print $1"\t"$3"\t"$4"\t"$6"\t"$7"\t"$7-$6"\t"$5}' | while read line
 do
 tyr=$( echo "${line}" | awk -F "\t" '{print $NF}' )
 cat ${tyrRspath} | grep "${tyr}"$ | awk -v line="$line" '{print line"\t"$4"\t"$5"\t"$7}'
 done >> ${prefix}.starships_SLRs.tsv
+
 tail -n+2 ${prefix}.SLRs.starships_subtracted.tyrRs_agg.tsv | cut -f1-9,11 >> ${prefix}.starships_SLRs.tsv
 
 ##get a fasta for all these sequences
