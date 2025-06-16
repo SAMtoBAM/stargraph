@@ -32,6 +32,7 @@ requirements:
   - conda-forge::r-ggnewscale=0.5.1
   - samtools=1.6
   - bioconda::sourmash>=4.9.0
+  - conda-forge::sourmash_plugin_branchwater=0.9.13
   - bioconda::blast=2.16.0
   - bioconda::mcl=14.137
   - bioconda::circos=0.69.9
