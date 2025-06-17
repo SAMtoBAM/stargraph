@@ -575,9 +575,6 @@ Rscript ${cluster}.R
 
 done
 
-##cleanup the default printing of Rplots
-rm Rplots.pdf 
-
 cd ..
 
 ##########################################################################
