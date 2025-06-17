@@ -437,7 +437,7 @@ cd 3.SLR_plots
 ##create header for annotations
 echo "contig;start;end;sense;gene;label" | tr ';' '\t' > genes.bed
 ##now grab the coordinates, sense, name of gene and a label just for tyrs, duf3723 and mybs
-cat ${tyrRspath} | awk -F "\t" '{print $1"\t"$4"\t"$5"\t"$7"\t"$9}' | awk -F ";Name=" '{print $0"\t"$NF}' | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6}' | awk -v identifier="$identifier"  '{if($5 ~ "_"identifier) {print $0"\ttyrR"} else if($5 ~ "_myb") {print $0"\tmyb"} else if($5 ~ "_duf3723") {print $0"\tduf3723"} else {print $0"\tNA"}}' >> genes.bed
+cat ${tyrRspath} | awk -F "\t" '{if($3 == "mRNA") print $1"\t"$4"\t"$5"\t"$7"\t"$9}' | awk -F ";Name=" '{print $0"\t"$NF}' | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6}' | awk -v identifier="$identifier"  '{if($5 ~ "_"identifier) {print $0"\ttyrR"} else if($5 ~ "_myb") {print $0"\tmyb"} else if($5 ~ "_duf3723") {print $0"\tduf3723"} else {print $0"\tNA"}}' >> genes.bed
 
 
 ##loop through each cluster defined previously to get a list of the SLRs and a list of genomes missing these elements to be used as an insertion site
@@ -575,6 +575,8 @@ Rscript ${cluster}.R
 
 done
 
+##cleanup the default printing of Rplots
+rm Rplots.pdf 
 
 cd ..
 
@@ -641,14 +643,95 @@ tail -n+2 ${prefix}.SLRs.starships_subtracted.tyrRs_agg.tsv | cut -f1-9,11 >> ${
 tail -n+2 ${prefix}.starships_SLRs.tsv | awk '{print $3"\t"$4"\t"$5"\t"$1}' > ${prefix}.starships_SLRs.bed
 bedtools getfasta -name -bed ${prefix}.starships_SLRs.bed -fi ../${prefix}.assemblies.fa.gz | sed 's/::/ /g' > ${prefix}.starships_SLRs.fa
 
+cp ${prefix}.starships_SLRs.fa ../
+cp ${prefix}.starships_SLRs.tsv ../
+cp ${prefix}.starships_SLRs.bed ../
+
+cd ..
+
+#######################################################################################
+################# STEP 5: GENRATING ALIGNMENTS AND NETWORK ANALYSES ###################
+#######################################################################################
 
 
-##redo the clustering approach using SLRs and starships
-##convert SLRs to the same navis-haplotype association if they cluster???
+##we now have our Starship-SLR dataset we can see what this combined dataset looks like
+##we can do this in terms of kmer similiarity initially
+##this allows us to do two thing; build networks of the similarities AND cluster Starships and SLRs and align them to one another
+
+mkdir 5.SLR_starship_network_alignments
+cd 5.SLR_starship_network_alignments
+
+##generate a folder to place the sourmash singatures etc
+mkdir sourmash_signatures
+
+##for sourmash sketching there is one important parameter to think about: k-mer size
+##here we are using a k-mer size of 31, this gives stringency and resolution
+awk -f " " '{print $1}' ../4.SLR_starship_combination/${prefix}.starships_SLRs.fa > temp.fa
+sourmash sketch dna -p k=31,noabund --singleton -o sourmash_signatures/ temp.fa
+sourmash compare -k 31 sourmash_signatures/*.sig.gz --csv sourmash_signatures.compare_k31.csv
+sourmash compare -k 31 sourmash_signatures/*.sig.gz -o sourmash_signatures.compare_k31.dist
+
+##need a very low threshold to remove all very small similarities, here using 10% jaccard similarity
+threshold="10"
+##now we can generate a pairwise sourmash similarity estimate
+echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise.tsv
+
+sigs="sourmash_signatures.compare_k31.csv"
+
+##take the naming scheme prior to the file type suffix csv (use for output)
+sigs2=$( echo ${sigs} | sed 's/.csv//' )
+##record the header of the last column, needed to filter after the loop
+final=$( awk -F "," 'NR == 1{print $NF}' ${sigs} )
+declare -A seen
+
+# Read header (first line) and parse column names
+IFS=',' read -r -a cols < "$sigs"
+
+# Get data rows (skip first line)
+tail -n+2 "$sigs" | while IFS= read -r line; do
+    # Strip any trailing carriage returns/newlines, then split line into array
+    line=$(echo "$line" | tr -d '\r\n')
+    IFS=',' read -r -a values <<< "$line"
+
+    row_index=$((row_index + 1))
+    row_name="${cols[$((row_index - 1))]}"
+
+    for i in "${!values[@]}"; do
+        col_name=$(echo "${cols[$i]}" | tr -d '\r\n')
+        value=$(echo "${values[$i]}" | tr -d '\r\n')
+
+        # Sort key for symmetric pairwise deduplication
+        key=$(echo -e "$row_name\n$col_name" | sort | paste -sd'-')
+
+        if [[ -z "${seen[$key]}" ]]; then
+            echo "$row_name;$col_name;$value"
+            seen[$key]=1
+        fi
+    done
+done | grep -v ^"${final}" | tr ';' '\t' | awk -F "\t" '{ if($1 != "" && $3 != "") print $1"\t"$2"\t"$3*100}' | awk -F "\t" -v threshold="$threshold" '{if($1 != $2 && $3 > threshold) print }' >> ${prefix}.starships_SLRs.pairwise.tsv
+
+##also want a simplified metadata file used for plotting the networks
+#echo "name;type;family;navis_haplotype;navis;navis_slim" | tr ';' '\t' > ${prefix}.starships_SLRs.metadata.tsv
+echo "name;type;navis_haplotype;navis;navis_slim" | tr ';' '\t' > ${prefix}.starships_SLRs.metadata.tsv
+tail -n+2 ../${prefix}.starships_SLRs.tsv | awk '{print $1}' | sort -u | while read element
+do
+navhap=$( tail -n+2 ../${prefix}.starships_SLRs.tsv  | awk -v element="$element" '{if($1 == element) print $2}' )
+navis=$( echo "${navhap}" | awk -F "-" '{print $1}' )
+navisslim=$( echo "${navis}" | awk '{if($1 ~ "nav"){print "NA"} else {print}}' )
+#family=$( tail -n+2 ../${prefix}.starships_SLRs.tsv  | awk -v element="$element" '{if($1 == element) print $2}' )
+type=$( echo "${element}" | awk '{if($1 ~ "SLR"){print "SLR"} else {print "Starship"}}' )
+#echo "${element};${type};${family};${navhap};${navis};${navisslim}" | tr ';' '\t'
+echo "${element};${type};${navhap};${navis};${navisslim}" | tr ';' '\t'
+done >> ${prefix}.starships_SLRs.metadata.tsv
+
+
+Rscriptpath2=$( which network_plots.R )
+cat ${Rscriptpath2} | sed "s/PREFIX/${prefix}/g" | sed "s|PATHTOOUTPUT|${outputpath}/5.SLR_starship_network_alignments|g" > network_plotting.R
+Rscript network_plotting.R
 
 
 
-
+cd ..
 
 ######################################################################################################################################################################################################################################
 ######################################################################################################################################################################################################################################
