@@ -15,7 +15,7 @@ The combination of both tools provides a comprehensive view of genomic regions i
 **_stargraph_** requires the same input as ```starfish``` and some ```starfish``` output <br/>
 As ```stargraph``` requies ```starfish``` input; The ```starfish``` pipeline should be run first in order to feed ```stargraph``` with both tyrosine recombinase (TyrR) and _Starship_ positions. See Step 0.
 
-### Pipeline
+## Pipeline
 Using the tool requires 7 steps: <br/>
 -1 --> 0 Preprocessing/Set up: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;-1: Preprocessing of input assembly data <br/>
@@ -31,10 +31,15 @@ Using the tool requires 7 steps: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 7: ```cargobay``` use a database of public fungal assemblies to find evidence of HGT  <br/>
 
  
-# Easy installation
+## Apptainer usage
+```
+docker pull ghcr.io/samtobam/stargraph:latest
+```
 
-	conda install samtobam::stargraph
-
+## Conda installation
+```
+conda install samtobam::stargraph
+```
 
 # STEP -1. Preprocessing of input assembly data
 
