@@ -42,22 +42,6 @@ links=read_links("PATHTOOUTPUT/CLUSTER.contigs.nucmer.paf")
 
 ##the actual plot
 ## only selecting alignments greater than 1kb and with greater then 80% identity)
-gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1000 & map_match/map_length > 0.8 & seq_id != seq_id2), adjacent_only = T) %>%
-  gggenomes::sync() %>%
-  gggenomes::pick() %>%
-  gggenomes::flip() +
-  geom_link(aes(fill=((map_match/map_length)*100)) ,colour="black", alpha=0.5, offset = 0.05, size=0.1 )+
-  scale_fill_gradientn(colours=c("grey100","grey75", "grey50"), name ="Identity (%)", labels=c(80,90,100), breaks=c(80,90,100), limits = c(80, 100))+
-  new_scale_fill()+
-  geom_seq(linewidth = 0.5)+
-  geom_feat(color="red", alpha=.6, linewidth=3)+
-  geom_gene(aes(fill=label), stroke=0.1, colour="black", shape = 3)+
-  geom_seq_label(aes(label=label))+
-  geom_seq_label(aes(label=SLR), nudge_y = -.25)+
-  geom_gene_tag(aes(label=label), size = 2, nudge_y=0.1, check_overlap = FALSE)+
-  scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"), name = NULL)+
-  theme(legend.position="top", legend.box = "horizontal")
-
 ##save plot as variable so can save it
 plot=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1000 & map_match/map_length > 0.8 & seq_id != seq_id2), adjacent_only = T) %>%
   gggenomes::sync() %>%
