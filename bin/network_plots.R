@@ -3,7 +3,7 @@ library(ggraph)
 library(tidygraph)
 library(tidyverse)
 library(ggforce)
-library(concaveman)
+#library(concaveman)
 library(ggpubr)
 
 
