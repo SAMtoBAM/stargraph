@@ -1,3 +1,7 @@
+##this scripts is a skeleton for plotting networks created by stargraph
+
+options(warn = -1)
+
 library(igraph)
 library(ggraph)
 library(tidygraph)
