@@ -1,6 +1,8 @@
 ###this is a modifiable Rscript for generating Starship alignments
 ##the basic skeleton will remain the same and the same features can be swapped in for each variable
 
+options(warn = -1)
+
 ##only need gggenomes
 suppressMessages(library(IRanges))
 suppressMessages(library(gggenomes))
