@@ -718,7 +718,7 @@ threshold="10"
 ##now we can generate a pairwise sourmash similarity estimate
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise.tsv
 
-cat sourmash_signatures.compare_k31.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" '{if($3 >= 0.1) {print}}' >> ${prefix}.starships_SLRs.pairwise.tsv
+cat sourmash_signatures.compare_k31.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v threshold="$threshold" '{if($3*100 > threshold) {print}}' >> ${prefix}.starships_SLRs.pairwise.tsv
 
 ##also want a simplified metadata file used for plotting the networks
 #echo "name;type;family;navis_haplotype;navis;navis_slim" | tr ';' '\t' > ${prefix}.starships_SLRs.metadata.tsv
