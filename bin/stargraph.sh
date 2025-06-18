@@ -718,39 +718,7 @@ threshold="10"
 ##now we can generate a pairwise sourmash similarity estimate
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise.tsv
 
-sigs="sourmash_signatures.compare_k31.csv"
-
-##take the naming scheme prior to the file type suffix csv (use for output)
-sigs2=$( echo ${sigs} | sed 's/.csv//' )
-##record the header of the last column, needed to filter after the loop
-final=$( awk -F "," 'NR == 1{print $NF}' ${sigs} )
-declare -A seen
-
-# Read header (first line) and parse column names
-IFS=',' read -r -a cols < "$sigs"
-
-# Get data rows (skip first line)
-tail -n+2 "$sigs" | while IFS= read -r line; do
-    # Strip any trailing carriage returns/newlines, then split line into array
-    line=$(echo "$line" | tr -d '\r\n')
-    IFS=',' read -r -a values <<< "$line"
-
-    row_index=$((row_index + 1))
-    row_name="${cols[$((row_index - 1))]}"
-
-    for i in "${!values[@]}"; do
-        col_name=$(echo "${cols[$i]}" | tr -d '\r\n')
-        value=$(echo "${values[$i]}" | tr -d '\r\n')
-
-        # Sort key for symmetric pairwise deduplication
-        key=$(echo -e "$row_name\n$col_name" | sort | paste -sd'-')
-
-        if [[ -z "${seen[$key]}" ]]; then
-            echo "$row_name;$col_name;$value"
-            seen[$key]=1
-        fi
-    done
-done | grep -v ^"${final}" | tr ';' '\t' | awk -F "\t" '{ if($1 != "" && $3 != "") print $1"\t"$2"\t"$3*100}' | awk -F "\t" -v threshold="$threshold" '{if($1 != $2 && $3 > threshold) print }' >> ${prefix}.starships_SLRs.pairwise.tsv
+cat sourmash_signatures.compare_k31.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" '{if($3 >= 0.1) {print}}' >> ${prefix}.starships_SLRs.pairwise.tsv
 
 ##also want a simplified metadata file used for plotting the networks
 #echo "name;type;family;navis_haplotype;navis;navis_slim" | tr ';' '\t' > ${prefix}.starships_SLRs.metadata.tsv
