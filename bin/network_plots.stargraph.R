@@ -17,7 +17,7 @@ nodes = nodes %>% distinct(name, .keep_all = TRUE)
 graph = tbl_graph(nodes = nodes, edges = edges, directed = FALSE)
 
 ##plotting all the Starship and SLR elements
-g1=ggraph(graph, layout = "kk") +
+g1=ggraph(graph, layout = "fr") +
   geom_edge_link(aes(edge_alpha = -weight), edge_colour = "black", show.legend = FALSE) +
   geom_node_point(size = 3, aes(colour = type)) +
   theme_void() +
