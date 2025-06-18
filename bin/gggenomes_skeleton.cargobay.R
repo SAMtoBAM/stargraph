@@ -2,9 +2,9 @@
 ##the basic skeleton will remain the same and the same features can be swapped in for each variable
 
 ##only need gggenomes
-library(IRanges)
-library(gggenomes)
-library(ggnewscale)
+suppressMessages(library(IRanges))
+suppressMessages(library(gggenomes))
+suppressMessages(library(ggnewscale))
 
 ##need four features
 
