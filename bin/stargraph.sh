@@ -409,9 +409,10 @@ done > ${prefix}.SLRs.fa
 ##sourmash alternative, sketch the signatures (giving a small scalling value (100bp level of detection), small kmer, and sketch for each nucleotide sequence in the file)
 sourmash sketch dna -p scaled=100,k=21 ${prefix}.SLRs.fa --singleton -o ${prefix}.SLRs.sig
 ##now compare it against itself using 'containment' as the metrix (this allows us to easily find smaller elements nested within larger ones)
-sourmash compare ${prefix}.SLRs.sig --containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
-##convert to pairwise comparisons
-cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' >  ${prefix}.SLRs.sig.pairwise.tsv
+##here we only use the maximum containment value for any pairwise comparison and therefore keeping the table symmetric
+sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
+##convert to pairwise comparisons and change all values below 10% to 0
+cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" '{if($3 >= 0.1) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
 mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
@@ -548,7 +549,48 @@ done
 ##add the coordinates etc for the SLRs to the same bed file (doing it in this order so in the plotting the absent regions will be on top)
 ##then adding the topSLR first so that it will be plotted downstream and show the insertion site for this element
 tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v topSLR="$topSLR" '{if($4 == topSLR) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
-tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v topSLR="$topSLR" '{if($4 != topSLR) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
+
+##here ideally the order of the next SLRs should be based on the largest similarity stepwise
+## can use ../2.PAVs_to_SLRs/${prefix}.SLRs.sig.pairwise.tsv
+
+##old run without ordering
+#tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v topSLR="$topSLR" '{if($4 != topSLR) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
+
+##now we want to order the other SLR regions by similarity to the top SLR (based on the containment score)
+clusterlist=$( tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -F "\t" '{print $4}' | tr '\n' ' ' )
+
+awk -v top="$topSLR" -v cluster="$clusterlist" '
+BEGIN {
+    split(cluster, clist, " ")
+    for (i in clist) {
+        clusterMap[clist[i]] = 1
+        clusterCount++
+    }
+}
+{
+    if ($1 == top) {
+        lines[$2] = $3
+    } else if ($2 == top) {
+        lines[$1] = $3
+    }
+}
+END {
+    n = asorti(lines, sorted, "@val_num_desc")
+    found = 0
+    for (i = 1; i <= n; i++) {
+        target = sorted[i]
+        if (target in clusterMap) {
+            print target
+            delete clusterMap[target]
+            found++
+            if (found == clusterCount) break
+        }
+    }
+}
+' ../2.PAVs_to_SLRs/${prefix}.SLRs.sig.pairwise.tsv | while read element
+do
+tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v element="$element" '{if($4 == element) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
+done
 
 
 ##create a simple bed file for the SLRs regions
@@ -569,11 +611,14 @@ paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $
 
 ##automate the production of an R script using gggenomes to plot the alignment
 ##then use gggenome with R script to create the plots
-Rscriptpath=$( which gggenomes_skeleton.R )
+Rscriptpath=$( which gggenomes_skeleton.stargraph.R )
 cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/3.SLR_plots|g" > ${cluster}.R
 Rscript ${cluster}.R
 
 done
+
+##cleanup the default printing of Rplots
+rm Rplots.pdf 
 
 cd ..
 
@@ -722,9 +767,11 @@ echo "${element};${type};${navhap};${navis};${navisslim}" | tr ';' '\t'
 done >> ${prefix}.starships_SLRs.metadata.tsv
 
 
-Rscriptpath2=$( which network_plots.R )
+Rscriptpath2=$( which network_plots.stargraph.R )
 cat ${Rscriptpath2} | sed "s/PREFIX/${prefix}/g" | sed "s|PATHTOOUTPUT|${outputpath}/5.SLR_starship_network_alignments|g" > network_plotting.R
 Rscript network_plotting.R
+
+
 
 
 
