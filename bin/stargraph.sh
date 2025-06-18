@@ -663,7 +663,7 @@ mkdir sourmash_signatures
 
 ##for sourmash sketching there is one important parameter to think about: k-mer size
 ##here we are using a k-mer size of 31, this gives stringency and resolution
-awk -f " " '{print $1}' ../4.SLR_starship_combination/${prefix}.starships_SLRs.fa > temp.fa
+awk -F " " '{print $1}' ../4.SLR_starship_combination/${prefix}.starships_SLRs.fa > temp.fa
 sourmash sketch dna -p k=31,noabund --singleton -o sourmash_signatures/ temp.fa
 sourmash compare -k 31 sourmash_signatures/*.sig.gz --csv sourmash_signatures.compare_k31.csv
 sourmash compare -k 31 sourmash_signatures/*.sig.gz -o sourmash_signatures.compare_k31.dist
