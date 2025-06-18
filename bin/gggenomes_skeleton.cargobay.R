@@ -35,8 +35,7 @@ genes$strand=genes$sense
 
 ##fourth feature
 ##the nucmer all-v-all alignment converted to paf format
-links=read_links("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.contigs.delta.paf")
-
+links=suppressMessages(suppressWarnings(read_links("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.contigs.delta.paf")))
 
 ##the actual plot
 ## only selecting alignments greater than 1kb and with greater then 80% identity)
