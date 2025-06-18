@@ -2,9 +2,9 @@
 ##the basic skeleton will remain the same and the same features can be swapped in for each variable
 
 ##only need gggenomes
-library(IRanges)
-library(gggenomes)
-library(ggnewscale)
+suppressMessages(library(IRanges))
+suppressMessages(library(gggenomes))
+suppressMessages(library(ggnewscale))
 
 ##need four features
 
@@ -35,7 +35,7 @@ genes$strand=genes$sense
 
 ##fourth feature
 ##the nucmer all-v-all alignment converted to paf format
-links=read_links("PATHTOOUTPUT/CLUSTER.contigs.nucmer.paf")
+links=suppressMessages(suppressWarnings(read_links("PATHTOOUTPUT/CLUSTER.contigs.nucmer.paf")))
 
 
 
