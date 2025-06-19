@@ -211,6 +211,8 @@ done
 ####################### 0b. SETTING UP #######################
 ##############################################################
 
+echo "Welcome to Stargraph; lets get things set up"
+
 ##redefining some variables and checking
 
 ##paths to raw data
@@ -246,6 +248,9 @@ flank2=$( echo ${flank} | awk '{print $1/1000}' )
 #####################################################################
 ################# STEP 1: CREATING THE GENOME GRAPH #################
 #####################################################################
+
+echo "Paths look good; lets begin"
+echo "Step 1: Building the genome-graph"
 
 
 ##calculate the minimum nucleotide identity between all assemblies provided
@@ -287,6 +292,7 @@ cd 1.${prefix}.pggb
 ################# STEP 2: IDENTIFYING PRESENCE/ABSENCE VARIANT #################
 ################################################################################
 
+echo "Step 2: Identifying Presence-Absence variants"
 
 ##the simpliest way to do so was to use the odgi presence-absence 'PAV' function 
 ##it can produce a matrix of whether regions are present or absent in for each strain
@@ -353,6 +359,7 @@ cd ..
 ################# STEP 3a: IDENTIFYING STARSHIP-LIKE REGIONS ###################
 ################################################################################
 
+echo "Step 3a: Elevating PAVs to Starship-like regions"
 
 mkdir 2.PAVs_to_SLRs
 cd 2.PAVs_to_SLRs
@@ -430,6 +437,9 @@ cd ..
 ###################################################################
 ################# STEP 3b: GENERATING SLR PLOTS ###################
 ###################################################################
+
+echo "Step 3b: Clustering SLRs; aligning clusters and generating plots"
+
 
 mkdir 3.SLR_plots
 cd 3.SLR_plots
@@ -597,8 +607,6 @@ done
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.SLRs.bed
 cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="${cluster}" '{if($5 == cluster) {print $2"\t"$3"\t"$4"\t"$1}}' >> ${cluster}.SLRs.bed
 
-
-
 ##add the contigs missing the elements to the complete contigs file
 cat ${cluster}.absent.contigs.fa >> ${cluster}.contigs.fa
 
@@ -615,16 +623,25 @@ Rscriptpath=$( which gggenomes_skeleton.stargraph.R )
 cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/3.SLR_plots|g" > ${cluster}.R
 Rscript ${cluster}.R
 
+##remove some of the fasta files
+rm ${cluster}.contigs.fa
+rm ${cluster}.absent.*
+rm ${cluster}.contigs.nucmer.delta
+
 done
 
 ##cleanup the default printing of Rplots
 rm Rplots.pdf 
+
 
 cd ..
 
 ##########################################################################
 ################# STEP 4: COMBINING SLRs AND STARSHIPS ###################
 ##########################################################################
+
+
+echo "Step 4: Combining SLRs and Starships into a non-redundant dataset"
 
 
 ##we now have out SLR dataset  and can combine this with the Starship input from starfish
@@ -696,6 +713,9 @@ cd ..
 #######################################################################################
 
 
+echo "Step 5: Generating network plots and further clustering/alignments using the non-redundant dataset"
+
+
 ##we now have our Starship-SLR dataset we can see what this combined dataset looks like
 ##we can do this in terms of kmer similiarity initially
 ##this allows us to do two thing; build networks of the similarities AND cluster Starships and SLRs and align them to one another
@@ -712,9 +732,10 @@ awk -F " " '{print $1}' ../4.SLR_starship_combination/${prefix}.starships_SLRs.f
 sourmash sketch dna -p k=31,noabund --singleton -o sourmash_signatures/ temp.fa
 ##first we can get the jaccard similarity
 sourmash compare -k 31 sourmash_signatures/*.sig.gz --csv sourmash_signatures.compare_k31.jaccard.csv
-
 ##and second we can get the max pairwise containment score
 sourmash compare -k 31 sourmash_signatures/*.sig.gz --max-containment --csv sourmash_signatures.compare_k31.containment.csv
+
+rm temp.fa
 
 ##need a very low threshold to remove all very small similarities, here using 10% jaccard similarity
 threshold="10"
@@ -749,6 +770,22 @@ cat ${Rscriptpath2} | sed "s/PREFIX/${prefix}/g" | sed "s|PATHTOOUTPUT|${outputp
 Rscript network_plotting.R
 
 
+
+
+##cluster all the Starships and SLRs using the same kmer similarities (containment)
+##now use mcl to quickly find the clusters
+mcl ${prefix}.starships_SLRs.pairwise_containment.tsv --abc -o ${prefix}.starships_SLRs.pairwise_containment.mcl.txt
+##now name the clusters and then append to the summary files
+awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.starships_SLRs.pairwise_containment.mcl.txt > ${prefix}.starships_SLRs.pairwise_containment.mcl.clusters.txt
+
+echo "element;contig;start;end;cluster" | tr ';' '\t' > ${prefix}.starships_SLRs.plus_clusters.tsv
+cat ${prefix}.SLRs.tsv | while read line
+do
+SLR=$( echo "${line}" | awk '{print $1}' )
+cat ${prefix}.starships_SLRs.pairwise_containment.mcl.clusters.txt | awk -v SLR="$SLR" -v line="$line" '{if($2==SLR) print line"\t"$1}'
+done >> ${prefix}.starships_SLRs.plus_clusters.tsv
+
+##now use these clusters to generate plots
 
 
 
