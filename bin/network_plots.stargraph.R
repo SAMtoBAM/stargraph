@@ -68,8 +68,8 @@ g3=ggplot(connectivity_prop_jac)+
 ##plot the network plus the counts of unconnected
 plot_jac=ggarrange(g1,g2,g3, ncol = 3, widths = c(10,1,1))
 
-suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.jaccard.png", plot = plot_jac, units = "in", height = 300, width = 400, limitsize = FALSE)))
-suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.jaccard.svg", plot = plot_jac, units = "in", height = 300, width = 400, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.jaccard.png", plot = plot_jac, units = "in", height = 8, width = 14, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.jaccard.svg", plot = plot_jac, units = "in", height = 8, width = 14, limitsize = FALSE)))
 
 
 ################################################################
@@ -85,7 +85,7 @@ graph_cont = tbl_graph(nodes = nodes, edges = edges_cont, directed = FALSE)
 g4=ggraph(graph_cont, layout = "fr") +
   geom_edge_link(aes(edge_alpha = weight), edge_colour = "black", show.legend = FALSE) +
   geom_node_point(size = 3, aes(colour = type)) +
-  theme_void() +
+  theme_no_axes()+theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(legend.position = "top",plot.margin = unit(rep(1, 4), "cm"),legend.title=element_blank())+
   scale_color_manual(values=c("blue", "red"))
 
@@ -131,6 +131,6 @@ g6=ggplot(connectivity_prop_cont)+
 plot_cont=ggarrange(g4,g5,g6, ncol = 3, widths = c(10,1,1))
 
 
-suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.containment.png", plot = plot_cont, units = "in", height = 300, width = 400, limitsize = FALSE)))
-suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.containment.svg", plot = plot_cont, units = "in", height = 300, width = 400, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.containment.png", plot = plot_cont, units = "in", height = 8, width = 14, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.containment.svg", plot = plot_cont, units = "in", height = 8, width = 14, limitsize = FALSE)))
 
