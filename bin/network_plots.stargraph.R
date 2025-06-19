@@ -68,12 +68,9 @@ g3=ggplot(connectivity_prop_jac)+
 ##plot the network plus the counts of unconnected
 plot_jac=ggarrange(g1,g2,g3, ncol = 3, widths = c(10,1,1))
 
-ggsave(filename="PATHTOOUTPUT/network_plotting.jaccard.pdf", 
-       plot = plot_jac, 
-       device = cairo_pdf, 
-       width = 210, 
-       height = 175, 
-       units = "mm")
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.jaccard.png", plot = plot_jac, units = "in", height = 300, width = 400, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.jaccard.svg", plot = plot_jac, units = "in", height = 300, width = 400, limitsize = FALSE)))
+
 
 ################################################################
 ###now do the same but for the containment values
@@ -133,10 +130,7 @@ g6=ggplot(connectivity_prop_cont)+
 ##plot the network plus the counts of unconnected
 plot_cont=ggarrange(g4,g5,g6, ncol = 3, widths = c(10,1,1))
 
-ggsave(filename="PATHTOOUTPUT/network_plotting.containment.pdf", 
-       plot = plot_cont, 
-       device = cairo_pdf, 
-       width = 210, 
-       height = 175, 
-       units = "mm")
+
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.containment.png", plot = plot_cont, units = "in", height = 300, width = 400, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/network_plotting.containment.svg", plot = plot_cont, units = "in", height = 300, width = 400, limitsize = FALSE)))
 
