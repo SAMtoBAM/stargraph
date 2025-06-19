@@ -711,17 +711,17 @@ mkdir sourmash_signatures
 awk -F " " '{print $1}' ../4.SLR_starship_combination/${prefix}.starships_SLRs.fa > temp.fa
 sourmash sketch dna -p k=31,noabund --singleton -o sourmash_signatures/ temp.fa
 ##first we can get the jaccard similarity
-sourmash compare -k 31 sourmash_signatures/*.sig.gz --csv sourmash_signatures.compare_k31.csv
+sourmash compare -k 31 sourmash_signatures/*.sig.gz --csv sourmash_signatures.compare_k31.jaccard.csv
 
 ##and second we can get the max pairwise containment score
-sourmash compare -k 31 sourmash_signatures/*.sig.gz --csv sourmash_signatures.compare_k31.containment.csv
+sourmash compare -k 31 sourmash_signatures/*.sig.gz --max-containment --csv sourmash_signatures.compare_k31.containment.csv
 
 ##need a very low threshold to remove all very small similarities, here using 10% jaccard similarity
 threshold="10"
 ##generate header for the file that will be used to build the network
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v threshold="$threshold" '{if($3*100 > threshold) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
+cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v threshold="$threshold" '{if($3*100 > threshold) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 
 ##same but for the containment scores (we used max containment so the pairwise values are symmetric making this easy)
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_containment.tsv
