@@ -39,10 +39,11 @@ genes$strand=genes$sense
 ##the nucmer all-v-all alignment converted to paf format
 links=suppressMessages(suppressWarnings(read_links("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.contigs.delta.paf")))
 
+
 ##the actual plot
 ## only selecting alignments greater than 1kb and with greater then 80% identity)
 ##save plot as variable so can save it
-plot=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1000 & map_match/map_length > 0.8 & seq_id != seq_id2), adjacent_only = T) %>%
+plot=suppressMessages(suppressWarnings(print(gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1000 & map_match/map_length > 0.8 & seq_id != seq_id2), adjacent_only = T) %>%
   gggenomes::sync() %>%
   gggenomes::pick() %>%
   gggenomes::flip() +
@@ -56,10 +57,10 @@ plot=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_lengt
   geom_seq_label(aes(label=tag), nudge_y = -.25)+
   geom_gene_tag(aes(label=label), size = 2, nudge_y=0.1, check_overlap = FALSE)+
   scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"), name = NULL)+
-  theme(legend.position="top", legend.box = "horizontal")
+  theme(legend.position="top", legend.box = "horizontal"))))
 
 ##same plot but now allowing for all alignment s against all others
-plot2=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1000 & map_match/map_length > 0.8 & seq_id != seq_id2), adjacent_only = F) %>%
+plot2=suppressMessages(suppressWarnings(print(gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_length > 1000 & map_match/map_length > 0.8 & seq_id != seq_id2), adjacent_only = F) %>%
   gggenomes::sync() %>%
   gggenomes::pick() %>%
   gggenomes::flip() +
@@ -73,7 +74,7 @@ plot2=gggenomes(genes=genes, seqs=bed, feat=SLRbed, links=subset(links, map_leng
   geom_seq_label(aes(label=tag), nudge_y = -.25)+
   geom_gene_tag(aes(label=label), size = 2, nudge_y=0.1, check_overlap = FALSE)+
   scale_fill_manual(values = c("red","blue","lightblue"), breaks=c("tyrR","myb", "duf3723"), name = NULL)+
-  theme(legend.position="top", legend.box = "horizontal")
+  theme(legend.position="top", legend.box = "horizontal"))))
 
 widthFrac = max(bed$length+100000) / 20000
 #heightFrac = nrow(regionSeqs) / 2 # for default cases
