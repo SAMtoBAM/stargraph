@@ -80,9 +80,9 @@ widthFrac = max(bed$length+100000) / 20000
 #heightFrac = nrow(regionSeqs) / 2 # for default cases
 heightFrac = nrow(bed) / 0.5 # for when OG ids are included as gene_name
 
-ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.adjacent.png", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)
-ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.adjacent.svg", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.adjacent.png", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.adjacent.svg", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
 
-ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.allvall.png", plot = plot2, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)
-ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.allvall.svg", plot = plot2, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.allvall.png", plot = plot2, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.allvall.svg", plot = plot2, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
 
