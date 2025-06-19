@@ -23,8 +23,8 @@ graph_jac = tbl_graph(nodes = nodes, edges = edges_jac, directed = FALSE)
 g1=ggraph(graph_jac, layout = "fr") +
   geom_edge_link(aes(edge_alpha = weight), edge_colour = "black", show.legend = FALSE) +
   geom_node_point(size = 3, aes(colour = type)) +
-  theme_void() +
-  theme(legend.position = "top",plot.margin = unit(rep(1, 4), "cm"),legend.title=element_blank())+
+  theme_no_axes()+
+  theme(legend.position = "bottom",legend.title=element_blank())+
   scale_color_manual(values=c("blue", "red"))
 
 
@@ -85,9 +85,10 @@ graph_cont = tbl_graph(nodes = nodes, edges = edges_cont, directed = FALSE)
 g4=ggraph(graph_cont, layout = "fr") +
   geom_edge_link(aes(edge_alpha = weight), edge_colour = "black", show.legend = FALSE) +
   geom_node_point(size = 3, aes(colour = type)) +
-  theme_no_axes()+theme(legend.position = "bottom", legend.title = element_blank()) +
-  theme(legend.position = "top",plot.margin = unit(rep(1, 4), "cm"),legend.title=element_blank())+
+  theme_no_axes()+
+  theme(legend.position = "bottom",legend.title=element_blank())+
   scale_color_manual(values=c("blue", "red"))
+
 
 
 ##one potential measure of false positives would the number of elements without any connections
