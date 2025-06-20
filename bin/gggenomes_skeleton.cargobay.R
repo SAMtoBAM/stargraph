@@ -16,6 +16,8 @@ bed=read.csv("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATE
 ##just modify some headers for downstream handling
 ##make another header, copy of contig, but called seq_id
 bed$seq_id = bed$contig
+##add another column, bin_id, which will be used by gggenomes to split up each element onto its own line (defaults to seq_id for clustering per row if not present)
+bed$bin_id = 1:nrow(bed) 
 ##also length using the end position
 #bed$length = bed$end
 bed$length = bed$end - bed$start
