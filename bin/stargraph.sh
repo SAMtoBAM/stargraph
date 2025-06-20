@@ -770,23 +770,146 @@ cat ${Rscriptpath2} | sed "s/PREFIX/${prefix}/g" | sed "s|PATHTOOUTPUT|${outputp
 Rscript network_plotting.R
 
 
-
-
+##get rid of header before feeding the pairwise similarities to mcl
+tail -n+2 ${prefix}.starships_SLRs.pairwise_containment.tsv > temp.fa
 ##cluster all the Starships and SLRs using the same kmer similarities (containment)
 ##now use mcl to quickly find the clusters
-mcl ${prefix}.starships_SLRs.pairwise_containment.tsv --abc -o ${prefix}.starships_SLRs.pairwise_containment.mcl.txt
+mcl temp.fa --abc -o ${prefix}.starships_SLRs.pairwise_containment.mcl.txt
+rm temp.fa
 ##now name the clusters and then append to the summary files
 awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.starships_SLRs.pairwise_containment.mcl.txt > ${prefix}.starships_SLRs.pairwise_containment.mcl.clusters.txt
 
 echo "element;contig;start;end;cluster" | tr ';' '\t' > ${prefix}.starships_SLRs.plus_clusters.tsv
-cat ${prefix}.SLRs.tsv | while read line
+tail -n+2 ../${prefix}.starships_SLRs.tsv | awk '{print $1"\t"$3"\t"$4"\t"$5}' | while read line
 do
 SLR=$( echo "${line}" | awk '{print $1}' )
 cat ${prefix}.starships_SLRs.pairwise_containment.mcl.clusters.txt | awk -v SLR="$SLR" -v line="$line" '{if($2==SLR) print line"\t"$1}'
 done >> ${prefix}.starships_SLRs.plus_clusters.tsv
 
 ##now use these clusters to generate plots
+##first create a simplified bed file for the annotations
+##create header for annotations
+echo "contig;start;end;sense;gene;label" | tr ';' '\t' > genes.bed
+##now grab the coordinates, sense, name of gene and a label just for tyrs, duf3723 and mybs
+cat ${tyrRspath} | awk -F "\t" '{if($3 == "mRNA") print $1"\t"$4"\t"$5"\t"$7"\t"$9}' | awk -F ";Name=" '{print $0"\t"$NF}' | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6}' | awk -v identifier="$identifier"  '{if($5 ~ "_"identifier) {print $0"\ttyrR"} else if($5 ~ "_myb") {print $0"\tmyb"} else if($5 ~ "_duf3723") {print $0"\tduf3723"} else {print $0"\tNA"}}' >> genes.bed
 
+
+##loop through each cluster defined previously to get a list of the SLRs and a list of genomes missing these elements to be used as an insertion site
+tail -n+2 ${prefix}.starships_SLRs.plus_clusters.tsv | cut -f5 | sort -u | while read cluster
+do
+
+##get the elements
+cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) {print $1}}' > ${cluster}.list.txt
+
+###extract the SLRs PLUS the flanking regions around them into a single fasta for alignment (this will be used to identify a good region to visualise the insertion)
+##also extract the full contigs in which the SLRs are found (this will be used for the actual alignment)
+if [ -f ${cluster}.regions_plus_flank.fa ]
+then
+rm ${cluster}.regions_plus_flank.fa
+fi
+
+if [ -f ${cluster}.contigs.fa ]
+then
+rm ${cluster}.contigs.fa
+fi
+
+echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.tsv
+cat ${cluster}.list.txt | while read SLR
+do
+contig=$( cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $2}' )
+contiglength=$( cat ../${prefix}.assemblies.fa.gz.fai | awk -v contig="$contig" '{if($1 == contig) print $2}' )
+cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -F "\t" -v SLR="$SLR" -v flank="$flank" '{if($1 == SLR) print $2"\t"$3-flank"\t"$4+flank}' | awk '{if($2 < 0 ) {print $1"\t1\t"$3} else {print}}' | awk -v SLR="$SLR" -v contiglength="$contiglength" '{if($3 > contiglength ) {print $1"\t"$2"\t"contiglength"\t"SLR} else {print $0"\t"SLR}}'
+done >> ${cluster}.regions_plus_flank.tsv
+tail -n+2 ${cluster}.regions_plus_flank.tsv  | while read line
+do
+coords=$( echo "${line}" | awk '{print $1":"$2"-"$3}' )
+contig=$( echo "${line}" | awk '{print $1}' )
+SLR=$( echo "${line}" | awk '{print $4}' )
+samtools faidx ../${prefix}.assemblies.fa.gz "${coords}" | awk -v SLR="$SLR" '{if($0 ~ ">") {print ">"SLR">>"$0} else {print}}' | sed 's/>>>/ /g' >> ${cluster}.regions_plus_flank.fa
+samtools faidx ../${prefix}.assemblies.fa.gz "${contig}" >> ${cluster}.contigs.fa
+done 
+
+##take just one of the SLRs in the cluster; one with the largest sum of flank lengths on either side or the largest (only one if they are equal)
+topSLR=$( cat ${cluster}.list.txt | while read SLR
+do
+start=$( cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $3}' )
+end=$( cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $4}' )
+
+startmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" -v start="$start" '{if($4 == SLR) print start-$2}' )
+endmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" -v end="$end" '{if($4 == SLR) print $3-end}' )
+
+echo "${SLR};${startmoddiff};${endmoddiff}" | tr ';' '\t'
+
+done | awk -v flank="$flank" '{if(($2+$3) > sumflank) {sumflank=($2+$3); SLR=$1}} END{print SLR}' )
+##save the SLR+flank region to a temporary fasta file
+samtools faidx ${cluster}.regions_plus_flank.fa ${topSLR} > ${cluster}.regions_plus_flank.temp.fa
+
+##create a header for a bed file to be populated
+##this bed file will dictate the regions to be aligned (which will be relative to the extracted regions)
+echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.plotting.bed
+
+##add the coordinates etc for the SLRs to the same bed file
+##then adding the topSLR first so that it will be plotted downstream and show the insertion site for this element
+tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v topSLR="$topSLR" '{if($4 == topSLR) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
+
+##now we want to order the other SLR regions by similarity to the top SLR (based on the containment score)
+clusterlist=$( tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -F "\t" '{print $4}' | tr '\n' ' ' )
+
+awk -v top="$topSLR" -v cluster="$clusterlist" '
+BEGIN {
+    split(cluster, clist, " ")
+    for (i in clist) {
+        clusterMap[clist[i]] = 1
+        clusterCount++
+    }
+}
+{
+    if ($1 == top) {
+        lines[$2] = $3
+    } else if ($2 == top) {
+        lines[$1] = $3
+    }
+}
+END {
+    n = asorti(lines, sorted, "@val_num_desc")
+    found = 0
+    for (i = 1; i <= n; i++) {
+        target = sorted[i]
+        if (target in clusterMap) {
+            print target
+            delete clusterMap[target]
+            found++
+            if (found == clusterCount) break
+        }
+    }
+}
+' ${prefix}.starships_SLRs.pairwise_containment.tsv | while read element
+do
+tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v element="$element" '{if($4 == element) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
+done
+
+
+##create a simple bed file for the SLRs regions
+echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.SLRs.bed
+cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -v cluster="${cluster}" '{if($5 == cluster) {print $2"\t"$3"\t"$4"\t"$1}}' >> ${cluster}.SLRs.bed
+
+##generate all vs all alignments for the contigs
+##remove self alignment and any alignment smaller than 1kb
+nucmer --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
+paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6) {print}}' > ${cluster}.contigs.nucmer.paf
+
+
+##automate the production of an R script using gggenomes to plot the alignment
+##then use gggenome with R script to create the plots
+Rscriptpath=$( which gggenomes_skeleton.stargraph.R )
+cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/5.SLR_starship_network_alignments|g" > ${cluster}.R
+Rscript ${cluster}.R
+
+##remove some of the fasta files
+rm ${cluster}.contigs.fa
+rm ${cluster}.contigs.nucmer.delta
+
+done
 
 
 cd ..
