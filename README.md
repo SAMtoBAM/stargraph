@@ -27,7 +27,7 @@ Using the tool requires 7 steps: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 4: Combining SLRs with _Starships_ to generate a non-redundant dataset <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 5: Generating alignments and Network analyses <br/>
 &nbsp;6 --> 7 additional stargraph modules: <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 6: ```allstars``` to classify newly found elements by similarity to a database of described/named elements  <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 6: ```COMING SOON; allstars``` to classify newly found elements by similarity to a database of described/named elements  <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 7: ```cargobay``` use a database of public fungal assemblies to find evidence of HGT  <br/>
 
  
@@ -63,7 +63,7 @@ Feed this _assemblies_panSN.txt_ file to ```stargraph```; input parameter ```-a 
 ```stargraph``` requires some ```starfish``` input in order to run in its entirety <br/>
 This includes: <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 1. The _de-novo_ annotations of Tyrosine recombinases used to elevate PAVs to SLRs <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use:_starfish_output/geneFinder/\*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_ ) <br/> 
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _starfish_output/geneFinder/\*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_ ) <br/> 
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (```stargraph``` input parameter ```-r | --tyrRs```) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 2. A final list of curated _Starship_ elements (combined with SLRs to generate the non-redundant dataset) <br/>
 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; (usually can use: _'starfish_output/elementFinder/\*.elements.ann.feat'_) <br/>
@@ -74,21 +74,21 @@ You can follow the starfish tutorials running; provided on the [github/wiki](htt
 Or <br/>
 To simplify running ```starfish``` and ensure compatability etc: you can use the wrapper ```starfish_wrapper.sh``` provided by ```stargraph``` <br/>
 The wrapper runs the primary steps required with most default parameters <br/>
-In this case the input used will be the same list of paths to the PanSN-spec-like renamed assemblies as used for ```stargraph``` e.g. _assemblies_panSN.txt_
+In this case the input used will be the same list of paths to the PanSN-spec-like renamed assemblies as used for ```stargraph``` e.g. _assemblies_panSN.txt_ <br/>
+_Note: You can use all available assemblies for starfish but only long-contiguous assemblies for stargraph_
 
 	starfish_wrapper.sh -a assemblies_panSN.txt
 
-The final wrapper output includes a set of putative _Starships_. These need to be manually validated with the pair-viz outputs. <br/>
+The final wrapper output includes a set of putative _Starships_.
 
 Additional steps in the wrapper include the _de-novo_ detection of DUF3723 and MYB/SANT genes associated with _Starships_ to be used in _Starship_ and SLR visualisation <br/>
-These annotations are combined in the output file _starfish_output/${prefix}.filt.SRGs_combined.gff_ (best input for stargraph --tyrRs )
-
-NEED TO DETAILS ON HOW TO SET ASIDE A MANUALLY VALIDATED SET
+These annotations are combined in the output file _starfish_output/${prefix}.filt.SRGs_combined.gff_ (best input for stargraph --tyrRs ) <br/>
+Due to the putative assocaition of these MYB/SANT elements near the opposite _Starship_ edge to the captain; they are particularly helpful in visualising the ends of some elements
 
 # STEP 1-5 Running stargraph
 
-stargraphs initial module will find _Starship_-like regions and combine them with _Starships_ <br/>
-To do this combine the list of assembly paths with: <br/>
+**_stargraphs_** initial module will find _Starship_-like regions and combine them with _Starships_ <br/>
+To do this combine the list of assembly paths with ```starfish``` output: <br/>
 the tyrosine recombinase annotations (_starfish_output/geneFinder/\*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_  | --tyrRs) <br/>
 the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_ | --elements)
 
@@ -121,10 +121,19 @@ the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_
 	-h | --help			Print this help message
 
 
-The final output stargraph_output/${prefix}.starships_SLRs.tsv contains the final results of stargraph
+The final output **_stargraph_output/${prefix}.starships_SLRs.tsv_** contains the final results of ```stargraph```; a nonredundant list of _Starships_ and _Starship_-like elements <br/>
+Additionally: <br/>
+**1.*.pggb** : all genome-graph output from both pggb and odgi <br/>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; information about the identified regions of Presence/Absence variation <br/>
+**2.PAVs_to_SLRs** : information on the elevation of PAVs to SLRs using the provided tyrosine recombinase locations <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; contains information on the elevation of PAVs not elevated to SLR status but containing DUF3723 or MYB genes <br/>
+**3.SLR_plots** : plots showing the alignment of SLRs clustered based on k-mer max-containment, including one insertion site per cluster <br/>
+**4.SLR_starship_combination** : information on generating the non-redundant dataset combining the provided _Starships_ with the newly identified SLRs <br/>
+**5.SLR_starship_network_alignments** : plots showing the alignment of _Starships_ and SLRs clustered together based on k-mer max-containment <br/>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; plots of networks using both Jaccard similarity and containment <br/>
 
 
-# STEP 6 Running allstars
+# COMING SOON STEP 6 Running allstars 
 
 Use the allstars module in order to classify your elements using a manually curated database of named elements (_db/named_starships_database.curated.fa_)
 
