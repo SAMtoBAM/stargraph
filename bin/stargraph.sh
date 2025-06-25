@@ -418,8 +418,9 @@ sourmash sketch dna -p scaled=100,k=21 ${prefix}.SLRs.fa --singleton -o ${prefix
 ##now compare it against itself using 'containment' as the metrix (this allows us to easily find smaller elements nested within larger ones)
 ##here we only use the maximum containment value for any pairwise comparison and therefore keeping the table symmetric
 sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
-##convert to pairwise comparisons and change all values below 10% to 0
-cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" '{if($3 >= 0.1) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
+##convert to pairwise comparisons and change all values below 25% to 0
+minjac="0.25"
+cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v minjac="$minjac" '{if($3 >= minjac) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
 mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
