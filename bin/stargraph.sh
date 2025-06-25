@@ -459,27 +459,18 @@ do
 cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) {print $1}}' > ${cluster}.list.txt
 
 ##get the genomes missed these SLRs
-cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if($5 == cluster) print}' | while read line
+cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -F "\t" -v cluster="$cluster" '{if($5 == cluster) print}' | while read line
 do
-SLR=$( echo "${line}" | awk '{print $1}'  )
-position=$( echo "${line}" | awk '{print $2"\t"$3"\t"$4}'  )
+SLR=$( echo "${line}" | awk  -F "\t" '{print $1}'  )
+position=$( echo "${line}" | awk  -F "\t" '{print $2"\t"$3"\t"$4}'  )
 cat ../1.${prefix}.pggb/${prefix}.PAVs.${minsize2}kb_min.tsv | grep "${position}" | awk '{print $4}' | tr ';' '\n' | while read absent
 do
 cat ${cluster}.list.txt | awk -F "${separator}" -v absent="$absent" -v hold="absent" '{if($1 == absent) {hold="present"}} END{if(hold=="absent") print absent}' 
-done > ${cluster}.absent.txt
-done
+done 
+done | sort -u > ${cluster}.absent.txt
 
 ###extract the SLRs PLUS the flanking regions around them into a single fasta for alignment (this will be used to identify a good region to visualise the insertion)
 ##also extract the full contigs in which the SLRs are found (this will be used for the actual alignment)
-if [ -f ${cluster}.regions_plus_flank.fa ]
-then
-rm ${cluster}.regions_plus_flank.fa
-fi
-
-if [ -f ${cluster}.contigs.fa ]
-then
-rm ${cluster}.contigs.fa
-fi
 
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.tsv
 cat ${cluster}.list.txt | while read SLR
@@ -539,26 +530,23 @@ paftools.js delta2paf ${cluster}.regions_plus_flank.absent.nucmer.delta > ${clus
 ##good aligning can be that at least a single contig has a single alignment larger than half the flank region
 ##take the best two aligning contigs from the dataset (ideally it'll be large contigs from two different genomes)
 ##then try to find the edges of the alignments using 20kb seeds (this will be used for the plotting; i.e. only this regions alignment visualised)
-if [ -f ${cluster}.absent.contigs.fa ]
-then
-rm ${cluster}.absent.contigs.fa
-fi
-cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -v flank="${flank}" '{if($11 > (flank/2) ) print}' | cut -f1 | sort -u | while read tempcontig
+
+cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v flank="${flank}" '{if($11 > (flank/2) ) print}' | cut -f1 | sort -u | while read tempcontig
 do
-cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -v tempcontig="$tempcontig" '{if($1 == tempcontig) sum=sum+$11} END{print tempcontig"\t"sum}'
+cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v tempcontig="$tempcontig" '{if($1 == tempcontig) sum=sum+$11} END{print tempcontig"\t"sum}'
 done | sort -k2nr | head -n2 | awk '{print $1}' | while read insertioncontig
 do
 strain=$( echo "${insertioncontig}" | awk -F "${separator}" '{print $1}' )
-edges=$( cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk '{if($11 > 20000) print}' | awk -v insertioncontig="$insertioncontig" '{if($1==insertioncontig) print}' | awk -v flank="$flank" 'BEGIN{max=0; min=99999999999999} {if($4 > max) {max=$4}; if($3 < min) {min=$3}} END{print min-(flank/2)"\t"max+(flank/2)}' | awk '{if($1 < 0) {print 0"\t"$2} else {print}}' )
-edges2=$( echo "${edges}" | awk '{print $1"-"$2}' )
-size=$( echo "${edges}" | awk '{print $2-$1}' )
+edges=$( cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" '{if($11 > 20000) print}' | awk -F "\t" -v insertioncontig="$insertioncontig" '{if($1==insertioncontig) print}' | awk -v flank="$flank" 'BEGIN{max=0; min=99999999999999} {if($4 > max) {max=$4}; if($3 < min) {min=$3}} END{print min-(flank/2)"\t"max+(flank/2)}' | awk -F "\t" '{if($1 < 0) {print 0"\t"$2} else {print}}' )
+edges2=$( echo "${edges}" | awk -F "\t" '{print $1"-"$2}' )
+size=$( echo "${edges}" | awk -F "\t" '{print $2-$1}' )
 samtools faidx ${cluster}.absent.fa "${insertioncontig}" >> ${cluster}.absent.contigs.fa
 echo "${insertioncontig};${edges};NA" | tr ';' '\t' >> ${cluster}.regions_plus_flank.plotting.bed
 done 
 
 ##add the coordinates etc for the SLRs to the same bed file (doing it in this order so in the plotting the absent regions will be on top)
 ##then adding the topSLR first so that it will be plotted downstream and show the insertion site for this element
-tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v topSLR="$topSLR" '{if($4 == topSLR) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
+tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v topSLR="$topSLR" '{if($4 == topSLR) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
 
 ##here ideally the order of the next SLRs should be based on the largest similarity stepwise
 ## can use ../2.PAVs_to_SLRs/${prefix}.SLRs.sig.pairwise.tsv
