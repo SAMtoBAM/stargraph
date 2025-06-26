@@ -419,8 +419,8 @@ sourmash sketch dna -p scaled=100,k=21 ${prefix}.SLRs.fa --singleton -o ${prefix
 ##here we only use the maximum containment value for any pairwise comparison and therefore keeping the table symmetric
 sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
 ##convert to pairwise comparisons and change all values below 25% to 0
-minjac="0.25"
-cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v minjac="$minjac" '{if($3 >= minjac) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
+mincont="0.25"
+cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3 >= mincont) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
 mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
@@ -477,9 +477,10 @@ echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.tsv
 cat ${cluster}.list.txt | while read SLR
 do
 contig=$( cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $2}' )
-contiglength=$( cat ../${prefix}.assemblies.fa.gz.fai | awk -v contig="$contig" '{if($1 == contig) print $2}' )
-cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" -v flank="$flank" '{if($1 == SLR) print $2"\t"$3-flank"\t"$4+flank}' | awk '{if($2 < 0 ) {print $1"\t1\t"$3} else {print}}' | awk -v SLR="$SLR" -v contiglength="$contiglength" '{if($3 > contiglength ) {print $1"\t"$2"\t"contiglength"\t"SLR} else {print $0"\t"SLR}}'
+contiglength=$( cat ../${prefix}.assemblies.fa.gz.fai | awk -F "\t" -v contig="$contig" '{if($1 == contig) print $2}' )
+cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" -v flank="$flank" '{if($1 == SLR) print $2"\t"$3-flank"\t"$4+flank}' | awk -F "\t" '{if($2 < 0 ) {print $1"\t1\t"$3} else {print}}' | awk -F "\t" -v SLR="$SLR" -v contiglength="$contiglength" '{if($3 > contiglength ) {print $1"\t"$2"\t"contiglength"\t"SLR} else {print $0"\t"SLR}}'
 done >> ${cluster}.regions_plus_flank.tsv
+
 tail -n+2 ${cluster}.regions_plus_flank.tsv  | while read line
 do
 coords=$( echo "${line}" | awk '{print $1":"$2"-"$3}' )
@@ -501,6 +502,7 @@ endmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" 
 echo "${SLR};${startmoddiff};${endmoddiff}" | tr ';' '\t'
 
 done | awk -v flank="$flank" '{if(($2+$3) > sumflank) {sumflank=($2+$3); SLR=$1}} END{print SLR}' )
+
 ##save the SLR+flank region to a temporary fasta file
 samtools faidx ${cluster}.regions_plus_flank.fa ${topSLR} > ${cluster}.regions_plus_flank.temp.fa
 
@@ -528,20 +530,28 @@ nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.regions_plus_
 paftools.js delta2paf ${cluster}.regions_plus_flank.absent.nucmer.delta > ${cluster}.regions_plus_flank.absent.nucmer.paf
 
 ##now use the paf file to find a contigs with good aligning regions
-##good aligning can be that at least a single contig has a single alignment larger than half the flank region
+##good aligning can be that at least a single contig with a minimum alignment length of 10kb
 ##take the best two aligning contigs from the dataset (ideally it'll be large contigs from two different genomes)
-##then try to find the edges of the alignments using 20kb seeds (this will be used for the plotting; i.e. only this regions alignment visualised)
+##then try to find the edges of the alignments using 10kb seeds (this will be used for the plotting; i.e. only this regions alignment visualised)
 
-cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v flank="${flank}" '{if($11 > (flank/2) ) print}' | cut -f1 | sort -u | while read tempcontig
+cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v flank="$flank" '{if($11 > (10000) ) print}' | cut -f1 | sort -u | while read tempcontig
 do
 cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v tempcontig="$tempcontig" '{if($1 == tempcontig) sum=sum+$11} END{print tempcontig"\t"sum}'
-done | sort -k2nr | head -n2 | awk '{print $1}' | while read insertioncontig
+done | sort -k2nr | head -n2 | awk '{print $1}' > ${cluster}.absent.contigs.txt
+
+##extract the contigs
+cat ${cluster}.absent.contigs.txt | while read insertioncontig
+do
+samtools faidx ${cluster}.absent.fa "${insertioncontig}"
+done > ${cluster}.absent.contigs.fa
+
+##get details on the aligned region for plotting (because we only aligned the example element 'top SLR' to the contigs, if we take the maximum region aligned, this should correspond to the edges of the flanks)
+cat ${cluster}.absent.contigs.txt | while read insertioncontig
 do
 strain=$( echo "${insertioncontig}" | awk -F "${separator}" '{print $1}' )
 edges=$( cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" '{if($11 > 20000) print}' | awk -F "\t" -v insertioncontig="$insertioncontig" '{if($1==insertioncontig) print}' | awk -v flank="$flank" 'BEGIN{max=0; min=99999999999999} {if($4 > max) {max=$4}; if($3 < min) {min=$3}} END{print min-(flank/2)"\t"max+(flank/2)}' | awk -F "\t" '{if($1 < 0) {print 0"\t"$2} else {print}}' )
 edges2=$( echo "${edges}" | awk -F "\t" '{print $1"-"$2}' )
 size=$( echo "${edges}" | awk -F "\t" '{print $2-$1}' )
-samtools faidx ${cluster}.absent.fa "${insertioncontig}" >> ${cluster}.absent.contigs.fa
 echo "${insertioncontig};${edges};NA" | tr ';' '\t' >> ${cluster}.regions_plus_flank.plotting.bed
 done 
 
@@ -591,7 +601,6 @@ do
 tail -n+2 ${cluster}.regions_plus_flank.tsv | awk -v element="$element" '{if($4 == element) {print $1"\t"$2"\t"$3"\t"$4}}' >> ${cluster}.regions_plus_flank.plotting.bed
 done
 
-
 ##create a simple bed file for the SLRs regions
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.SLRs.bed
 cat ../2.PAVs_to_SLRs/${prefix}.SLRs.plus_clusters.tsv | awk -v cluster="${cluster}" '{if($5 == cluster) {print $2"\t"$3"\t"$4"\t"$1}}' >> ${cluster}.SLRs.bed
@@ -602,7 +611,7 @@ cat ${cluster}.absent.contigs.fa >> ${cluster}.contigs.fa
 
 ##generate all vs all alignments for the contigs
 ##remove self alignment and any alignment smaller than 1kb
-nucmer --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
+nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
 paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6) {print}}' > ${cluster}.contigs.nucmer.paf
 
 
@@ -702,7 +711,7 @@ cd ..
 #######################################################################################
 
 
-echo "Step 5: Generating network plots and further clustering/alignments using the non-redundant dataset"
+echo "Step 5a: Generating network plots using the non-redundant dataset"
 
 
 ##we now have our Starship-SLR dataset we can see what this combined dataset looks like
@@ -726,17 +735,17 @@ sourmash compare -k 31 sourmash_signatures/*.sig.gz --max-containment --csv sour
 
 rm temp.fa
 
-##need a very low threshold to remove all very small similarities, here using 10% jaccard similarity
-threshold="10"
+##need a very low threshold to remove all very small similarities, here using 25% jaccard similarity/max-containment
+mincont="0.25"
 ##generate header for the file that will be used to build the network
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v threshold="$threshold" '{if($3*100 > threshold) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
+cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3*100 > mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 
 ##same but for the containment scores (we used max containment so the pairwise values are symmetric making this easy)
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_containment.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.containment.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v threshold="$threshold" '{if($3*100 > threshold) {print}}' >> ${prefix}.starships_SLRs.pairwise_containment.tsv
+cat sourmash_signatures.compare_k31.containment.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3*100 > mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_containment.tsv
 
 
 ##also want a simplified metadata file used for plotting the networks
@@ -757,6 +766,9 @@ done >> ${prefix}.starships_SLRs.metadata.tsv
 Rscriptpath2=$( which network_plots.stargraph.R )
 cat ${Rscriptpath2} | sed "s/PREFIX/${prefix}/g" | sed "s|PATHTOOUTPUT|${outputpath}/5.SLR_starship_network_alignments|g" > network_plotting.R
 Rscript network_plotting.R
+
+
+echo "Step 5b: Clustering Starships and SLRs and generating alignment plots"
 
 
 ##get rid of header before feeding the pairwise similarities to mcl
@@ -792,16 +804,6 @@ cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -v cluster="$cluster" '{if(
 
 ###extract the SLRs PLUS the flanking regions around them into a single fasta for alignment (this will be used to identify a good region to visualise the insertion)
 ##also extract the full contigs in which the SLRs are found (this will be used for the actual alignment)
-if [ -f ${cluster}.regions_plus_flank.fa ]
-then
-rm ${cluster}.regions_plus_flank.fa
-fi
-
-if [ -f ${cluster}.contigs.fa ]
-then
-rm ${cluster}.contigs.fa
-fi
-
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.tsv
 cat ${cluster}.list.txt | while read SLR
 do
@@ -884,7 +886,7 @@ cat ${prefix}.starships_SLRs.plus_clusters.tsv | awk -v cluster="${cluster}" '{i
 
 ##generate all vs all alignments for the contigs
 ##remove self alignment and any alignment smaller than 1kb
-nucmer --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
+nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
 paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6) {print}}' > ${cluster}.contigs.nucmer.paf
 
 
