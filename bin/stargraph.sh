@@ -747,12 +747,12 @@ mincont="0.25"
 ##generate header for the file that will be used to build the network
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3*100 > mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
+cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3 >= mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 
 ##same but for the containment scores (we used max containment so the pairwise values are symmetric making this easy)
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_containment.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.containment.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3*100 > mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_containment.tsv
+cat sourmash_signatures.compare_k31.containment.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3 >= mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_containment.tsv
 
 
 ##also want a simplified metadata file used for plotting the networks
