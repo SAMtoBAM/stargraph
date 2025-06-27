@@ -62,6 +62,7 @@ length="20000"
 kmersize="19"
 separator="_"
 minsize="30000"
+maxsize="2000000"
 window="1000"
 flank="75000"
 poaparam="7919,8069"
@@ -133,6 +134,11 @@ case "$key" in
 	shift
 	shift
 	;;
+	-x|--maxsize)
+	minsize="$2"
+	shift
+	shift
+	;;
 	-w|--window)
 	window="$2"
 	shift
@@ -184,6 +190,7 @@ case "$key" in
 	Optional parameters:
 	-s | --separator		PanSN-spec-like naming separator used (Default: _)
 	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
+	-x | --maxsize			Maximum size of SLRs to be kept; filter only applied after starship merging (Default: 2000000)
 	-w | --window			Size of windows used for PAV detection (Default: 1000)
 	-f | --flank			Size of flanking region used when plotting element alignments (Default: 75000)
 	-p | --prefix			Prefix for output (Default: stargraph)
@@ -526,17 +533,17 @@ done > ${cluster}.absent.fa
 echo "contig;start;end;SLR" | tr ';' '\t' > ${cluster}.regions_plus_flank.plotting.bed
 
 ##now align the SLR to the empty contigs (here only the flanks should have large aligning regions)
-nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.regions_plus_flank.absent.nucmer.delta ${cluster}.regions_plus_flank.temp.fa ${cluster}.absent.fa
+nucmer -t ${threads} --maxmatch --minmatch 100 --delta ${cluster}.regions_plus_flank.absent.nucmer.delta ${cluster}.regions_plus_flank.temp.fa ${cluster}.absent.fa
 paftools.js delta2paf ${cluster}.regions_plus_flank.absent.nucmer.delta > ${cluster}.regions_plus_flank.absent.nucmer.paf
 
-##now use the paf file to find a contigs with good aligning regions
-##good aligning can be that at least a single contig with a minimum alignment length of 10kb
-##take the best two aligning contigs from the dataset (ideally it'll be large contigs from two different genomes)
+##now use the paf file to find a contigs with good aligning regions (in a rather simplistic manner; which we can do as the input assemblies should be long-read)
+##good aligning can be that the contig has at least one alignment with a length > 20kb (remove chances of TE content influencing calculcations)
+##then take the best two aligning contigs from the dataset (ideally it'll be large contigs from two different genomes)
+##to find the 'best'; sum all regions aligning above 10kb in length and take the largest sum (10kb again helps with repeat content) 
 ##then try to find the edges of the alignments using 10kb seeds (this will be used for the plotting; i.e. only this regions alignment visualised)
-
-cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v flank="$flank" '{if($11 > (10000) ) print}' | cut -f1 | sort -u | while read tempcontig
+cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v flank="$flank" '{if($11 > (20000) ) print}' | cut -f1 | sort -u | while read tempcontig
 do
-cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v tempcontig="$tempcontig" '{if($1 == tempcontig) sum=sum+$11} END{print tempcontig"\t"sum}'
+cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v tempcontig="$tempcontig" '{if($1 == tempcontig && $11 > 10000) sum=sum+$11} END{print tempcontig"\t"sum}'
 done | sort -k2nr | head -n2 | awk '{print $1}' > ${cluster}.absent.contigs.txt
 
 ##extract the contigs
@@ -657,7 +664,7 @@ tail -n+2 ${elementspath} | cut -f1,4,6-7 | awk '{print $2"\t"$3"\t"$4"\t"$1}' >
 
 
 ##now do the subtraction from the SLRs and rename if any SLRs were split with multiple sections still remaning
-bedtools subtract -a ${prefix}.SLRs.bed -b ${prefix}.starships.bed | sortBed -i - | awk -v minsize="$minsize" '{if($3-$2 >= minsize) print}' | awk '{if(SLR==$4) {print contig"\t"start"\t"end"\t"SLR"_"n ; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n++; hold="hold"} else if(SLR != $4 && hold=="hold") {print line"_"n; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"} else {print line; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"}} END{if(hold=="hold") {print line"_"n; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"} else {print line; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"}}' | tail -n+2 > ${prefix}.SLRs.starships_subtracted.bed
+bedtools subtract -a ${prefix}.SLRs.bed -b ${prefix}.starships.bed | sortBed -i - | awk -v minsize="$minsize" -v maxsize="$maxsize" '{if(($3-$2) >= minsize && ($3-$2) <= maxsize) print}' | awk '{if(SLR==$4) {print contig"\t"start"\t"end"\t"SLR"_"n ; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n++; hold="hold"} else if(SLR != $4 && hold=="hold") {print line"_"n; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"} else {print line; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"}} END{if(hold=="hold") {print line"_"n; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"} else {print line; contig=$1 ; start=$2; end=$3; SLR=$4; line=$0; n=1; hold="nohold"}}' | tail -n+2 > ${prefix}.SLRs.starships_subtracted.bed
 
 ##now use this subtracted bedfile to create a starship compatable summary file with captain positions (if present in the new SLR chunk)
 echo "SLR;navis-haplotype;contig;start;end;size;captain;captain_start;captain_end;captain_size;captain_sense"  | sed 's/;/\t/g' > ${prefix}.SLRs.starships_subtracted.tyrRs.tsv
