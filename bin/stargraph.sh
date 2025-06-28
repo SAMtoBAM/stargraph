@@ -61,9 +61,10 @@ identity=""
 length="20000"
 kmersize="19"
 separator="_"
+window="1000"
 minsize="30000"
 maxsize="2000000"
-window="1000"
+kmerthreshold="0.3"
 flank="75000"
 poaparam="7919,8069"
 prefix="stargraph"
@@ -129,6 +130,11 @@ case "$key" in
 	shift
 	shift
 	;;
+	-w|--window)
+	window="$2"
+	shift
+	shift
+	;;
 	-m|--minsize)
 	minsize="$2"
 	shift
@@ -139,8 +145,8 @@ case "$key" in
 	shift
 	shift
 	;;
-	-w|--window)
-	window="$2"
+	-k|--kmerthreshold)
+	minsize="$2"
 	shift
 	shift
 	;;
@@ -189,9 +195,10 @@ case "$key" in
 
 	Optional parameters:
 	-s | --separator		PanSN-spec-like naming separator used (Default: _)
+	-w | --window			Size of windows used for PAV detection (Default: 1000)
 	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
 	-x | --maxsize			Maximum size of SLRs to be kept; filter only applied after starship merging (Default: 2000000)
-	-w | --window			Size of windows used for PAV detection (Default: 1000)
+	-k | --kmerthreshold	The minimum 'max-containment/jaccard-similarity' value to be used for clustering of elements for visualiation (Default: 0.3)
 	-f | --flank			Size of flanking region used when plotting element alignments (Default: 75000)
 	-p | --prefix			Prefix for output (Default: stargraph)
 	-o | --output			Name of output folder for all results (Default: stargraph_output)
@@ -426,8 +433,7 @@ sourmash sketch dna -p scaled=100,k=21 ${prefix}.SLRs.fa --singleton -o ${prefix
 ##here we only use the maximum containment value for any pairwise comparison and therefore keeping the table symmetric
 sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
 ##convert to pairwise comparisons and change all values below 25% to 0
-mincont="0.25"
-cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3 >= mincont) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
+cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v kmerthreshold="$kmerthreshold" '{if($3 >= kmerthreshold) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
 mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
@@ -617,9 +623,9 @@ cat ${cluster}.absent.contigs.fa >> ${cluster}.contigs.fa
 
 
 ##generate all vs all alignments for the contigs
-##remove self alignment and any alignment smaller than 1kb
+##remove self alignment and any alignment smaller than 750bp
 nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
-paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6) {print}}' > ${cluster}.contigs.nucmer.paf
+paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6 && $11 > 750) {print}}' > ${cluster}.contigs.nucmer.paf
 
 
 ##automate the production of an R script using gggenomes to plot the alignment
@@ -742,17 +748,15 @@ sourmash compare -k 31 sourmash_signatures/*.sig.gz --max-containment --csv sour
 
 rm temp.fa
 
-##need a very low threshold to remove all very small similarities, here using 25% jaccard similarity/max-containment
-mincont="0.25"
 ##generate header for the file that will be used to build the network
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3 >= mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
+cat sourmash_signatures.compare_k31.jaccard.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v kmerthreshold="$kmerthreshold" '{if($3 >= kmerthreshold) {print}}' >> ${prefix}.starships_SLRs.pairwise_jaccard.tsv
 
 ##same but for the containment scores (we used max containment so the pairwise values are symmetric making this easy)
 echo "to;from;weight" | tr ';' '\t' > ${prefix}.starships_SLRs.pairwise_containment.tsv
 ##now get a list of nonredundant pairwise jaccard similarities 
-cat sourmash_signatures.compare_k31.containment.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v mincont="$mincont" '{if($3 >= mincont) {print}}' >> ${prefix}.starships_SLRs.pairwise_containment.tsv
+cat sourmash_signatures.compare_k31.containment.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v kmerthreshold="$kmerthreshold" '{if($3 >= kmerthreshold) {print}}' >> ${prefix}.starships_SLRs.pairwise_containment.tsv
 
 
 ##also want a simplified metadata file used for plotting the networks
