@@ -67,6 +67,6 @@ widthFrac = max(bed$length+100000) / 20000
 #heightFrac = nrow(regionSeqs) / 2 # for default cases
 heightFrac = nrow(bed) / 0.5 # for when OG ids are included as gene_name
 
-suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/CLUSTER.png", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
+#suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/CLUSTER.png", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
 suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/CLUSTER.svg", plot = plot, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
 
