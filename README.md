@@ -97,11 +97,12 @@ the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_
 	
 	Required inputs:
 	-a | --assemblies		A txt file with each line containing the path to an assembly using the PanSN-spec-like naming scheme for each contig ([sample][delim][contig/scaffold])
-	-r | --tyrRs			Output file from starfish annotate that contains locations for the tyrosine recombinases in all assemblies (_starfish_output/geneFinder/*.filt.gff_ or _starfish_output/${prefix}.filt.SRGs_combined.gff_ )
-	-e | --elements			Output file from starfish insert (preferably manually curated) that contains locations for the Starships (_starfish_output/elementFinder/*.elements.ann.feat_)
+	-r | --tyrRs			Output file from starfish annotate that contains locations for the tyrosine recombinases in all assemblies (geneFinder/*.filt.gff)
+	-e | --elements			Output file from starfish insert (preferably manually curated) that contains locations for the Starships (elementFinder/*.elements.ann.feat)
+
 
 	Recommended inputs:
-	-t | --threads			Number of threads for tools that accept this option (Default: 1)
+	-t | --threads			Number of threads for tools that accept this option (default: 1)
 	-i | --identifier		The identifying tag used for tyrosine recombinases; given as the -i option for starfish annotate (Default: tyr)
 
 	pggb specific inputs:
@@ -112,13 +113,16 @@ the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_
 
 	Optional parameters:
 	-s | --separator		PanSN-spec-like naming separator used (Default: _)
-	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
 	-w | --window			Size of windows used for PAV detection (Default: 1000)
+	-m | --minsize			Minimum size of PAVs to be kept (Default: 30000)
+	-x | --maxsize			Maximum size of SLRs to be kept; filter only applied after starship merging (Default: 2000000)
+	-k | --kmerthreshold	The minimum 'max-containment/jaccard-similarity' value to be used for clustering of elements for visualiation (Default: 0.3)
 	-f | --flank			Size of flanking region used when plotting element alignments (Default: 75000)
 	-p | --prefix			Prefix for output (Default: stargraph)
 	-o | --output			Name of output folder for all results (Default: stargraph_output)
-	-c | --cleanup			Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (Default: 'yes')
+	-c | --cleanup			Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
 	-h | --help			Print this help message
+
 
 
 The final output **_stargraph_output/${prefix}.starships_SLRs.tsv_** contains the final results of ```stargraph```; a nonredundant list of _Starships_ and _Starship_-like elements <br/>
