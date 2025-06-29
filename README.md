@@ -147,4 +147,24 @@ Use the allstars module in order to classify your elements using a manually cura
 
 Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species 
 
-	cargobay.sh -e stargraph_output/${prefix}.starships_SLRs.fa 
+	cargobay.sh -e elements.fa -b elements.bed -a assemblies.fa -g annotation.gff3 -m metadata.tsv
+	
+	Required inputs:
+	-e | --elements		A multifasta file containing all the elements (Starships and SLRs) to be searched for
+	-b | --elementsbed	A bed file containing all the positions of the elements (Starships and SLRs)
+	-a | --assemblies	A multifasta file containing all the assemblies used to detect the Starships and SLRs
+	-g | --gff3			An annotation file containing all or a subset of genes of interest for plotting (at a minimum the de-novo annotated tyrRs)
+	-m | --metadata		A tsv file containing metadata two columns; first column is the sample name and the second an NCBI genus species name (e.g. Aspergillus fumigatus)
+
+	Recommended inputs:
+	-t | --threads		Number of threads for tools that accept this option (default: 1)
+	-s | --separator	Separator used to split sample and Starship/SLR names (Default: "_")
+	-i | --identifier	Identifier for gff3 to find and highlight tyrosine recombinase genes (Default: 'tyr')
+
+	Optional parameters:
+	-c | --containment	The minimum proportion containment threshold for identifying candidates for HGT using the sourmash database (Default: 0.5)
+	-f | --flank		Number of basepairs up and downstream of the element to be used for plotting (Default: 50000)
+	-p | --prefix		Prefix for output (Default: cargobay)
+	-o | --output		Name of output folder for all results (Default: cargobay_output)
+	-c | --cleanup		Remove a large number of files produced by each of the tools that can take up a lot of space. Choose between 'yes' or 'no' (default: 'yes')
+	-h | --help			Print this help message
