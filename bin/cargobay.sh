@@ -101,7 +101,7 @@ case "$key" in
 	
 	stargraph (version: ${version})
  
-	cargobay.sh -e elements.fa -m metadata.tsv
+	cargobay.sh -e elements.fa -b elements.bed -a assemblies.fa -g annotation.gff3 -m metadata.tsv
 	
 	Required inputs:
 	-e | --elements		A multifasta file containing all the elements (Starships and SLRs) to be searched for
