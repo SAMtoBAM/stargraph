@@ -432,7 +432,7 @@ sourmash sketch dna -p scaled=100,k=21 ${prefix}.SLRs.fa --singleton -o ${prefix
 ##now compare it against itself using 'containment' as the metrix (this allows us to easily find smaller elements nested within larger ones)
 ##here we only use the maximum containment value for any pairwise comparison and therefore keeping the table symmetric
 sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.compare.csv --labels-to ${prefix}.SLRs.sig.compare.txt
-##convert to pairwise comparisons and change all values below 25% to 0
+##convert to pairwise comparisons and change all values below the kmerthreshold % to 0
 cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v kmerthreshold="$kmerthreshold" '{if($3 >= kmerthreshold) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
 mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
