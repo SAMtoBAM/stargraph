@@ -146,7 +146,7 @@ case "$key" in
 	shift
 	;;
 	-k|--kmerthreshold)
-	minsize="$2"
+	kmerthreshold="$2"
 	shift
 	shift
 	;;
