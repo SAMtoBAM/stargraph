@@ -141,7 +141,7 @@ case "$key" in
 	shift
 	;;
 	-x|--maxsize)
-	minsize="$2"
+	maxsize="$2"
 	shift
 	shift
 	;;
