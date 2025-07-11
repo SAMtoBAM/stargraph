@@ -220,6 +220,7 @@ mkdir 1.database_search
 awk -F " " '{print $1}' ${elementspath} > 1.database_search/temp.fa 
 ##create a 1000 scaled; 21 kmer signature database (needs to be 1000 scaled due to the fungal database being built as so)
 sourmash sketch dna -p scaled=1000,k=21 1.database_search/temp.fa --singleton -o 1.database_search/${prefix}.elements.sig
+rm 1.database_search/temp.fa 
 
 ##then use gather to find similarities, use the multi version to search for multiple singatures simultaneously and then fast version to speed it up
 ##didn't use gather here as it was only giving a single match per signature file with all the details of the match
