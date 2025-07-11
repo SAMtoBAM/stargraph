@@ -145,7 +145,9 @@ Use the allstars module in order to classify your elements using a manually cura
 
 # STEP 7 Running cargobay
 
-Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species 
+Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species
+
+The bed file (-b) can be the stargraph_output/4.SLR_starship_combination/*.starships_SLRs.bed
 
 	cargobay.sh -e elements.fa -b elements.bed -a assemblies.fa -g annotation.gff3 -m metadata.tsv
 	
