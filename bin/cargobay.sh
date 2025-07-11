@@ -321,9 +321,9 @@ species=$( cat ${metadatapath} | awk -F "\t" -v sample="$sample" '{if(sample == 
 
 
 ##first extract the contig containing the element to be used for alignment
-coords=$( cat ${elementsbedpath} | awk -v element="$element" '{if($4 == element) print $1"\t"$2"\t"$3}'  )
+coords=$( cat ${elementsbedpath} | awk -F "\t" -v element="$element" '{if($4 == element) print $1"\t"$2"\t"$3}'  )
 coords2=$( echo "${coords}" | awk '{print $1":"$2"-"$3}' )
-contig=$( cat ${elementsbedpath} | awk -v element="$element" '{if($4 == element) print $1}'  )
+contig=$( cat ${elementsbedpath} | awk -F "\t" -v element="$element" '{if($4 == element) print $1}'  )
 samtools faidx ${assembliespath} ${contig} > 2.HGT_candidates/alignments/${element}/${element}.contig.fa
 samtools faidx ${assembliespath} ${coords2} > 2.HGT_candidates/alignments/${element}/${element}.element.fa
 
