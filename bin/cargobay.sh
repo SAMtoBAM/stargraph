@@ -216,8 +216,10 @@ echo "Step 1a: Sketching signatures for your input sequences then searching for 
 
 mkdir 1.database_search
 
+##create a temporary file removing anything after a space in the header of the fasta (sourmash keeps things after the space otherwise)
+awk -F " " '{print $1}' ${elementspath} > 1.database_search/temp.fa 
 ##create a 1000 scaled; 21 kmer signature database (needs to be 1000 scaled due to the fungal database being built as so)
-sourmash sketch dna -p scaled=1000,k=21 ${elementspath} --singleton -o 1.database_search/${prefix}.elements.sig
+sourmash sketch dna -p scaled=1000,k=21 1.database_search/temp.fa --singleton -o 1.database_search/${prefix}.elements.sig
 
 ##then use gather to find similarities, use the multi version to search for multiple singatures simultaneously and then fast version to speed it up
 ##didn't use gather here as it was only giving a single match per signature file with all the details of the match
