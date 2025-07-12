@@ -174,7 +174,7 @@ fi
 ##need a list of the assemblies and paths (using the softmasked genomes previously annotated)
 cat path_to_assemblies.txt | while read assembly
 do
-name=$( grep '>' ${assembly} | head -n1 | awk -F "${separator}" '{print $1}' | sed 's/>//' )
+name=$( grep '>' -m 1 ${assembly} | head -n1 | awk -F "${separator}" '{print $1}' | sed 's/>//' )
 echo ${name}";"${assembly} | tr ';' '\t'
 done > ome2assembly.txt
 
