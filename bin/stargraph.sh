@@ -435,7 +435,7 @@ sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.c
 ##convert to pairwise comparisons and change all values below the kmerthreshold % to 0
 cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v kmerthreshold="$kmerthreshold" '{if($3 >= kmerthreshold) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
-mcl ${prefix}.SLRs.sig.pairwise.tsv --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
+mcl ${prefix}.SLRs.sig.pairwise.tsv -I 1.5 --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
 awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.SLRs.sig.pairwise.mcl.txt > ${prefix}.SLRs.sig.pairwise.mcl.clusters.txt
 
