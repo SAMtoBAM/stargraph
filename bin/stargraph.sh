@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-version="v1"
+version="v1.0.0-beta"
 
 #####################################################################################
 ############# STEP -1. CREATING THE ENVIRONMENT. NOT ACTUALLY USED NOW ##############
