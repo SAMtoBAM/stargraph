@@ -147,7 +147,11 @@ Use the allstars module in order to classify your elements using a manually cura
 
 Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species
 
-The bed file (-b) can be the stargraph_output/4.SLR_starship_combination/*.starships_SLRs.bed
+The elements fasta file (-e) can be the _stargraph_output/4.SLR_starship_combination/\*.starships_SLRs.fa_ <br/>
+The bed file (-b) can be the _stargraph_output/4.SLR_starship_combination/\*.starships_SLRs.bed_ <br/>
+the assemblies fasta (-a) can be  _stargraph_output/\*.assemblies.fa.gz_ <br/>
+The gff3 file (-g) can be the gff3 with all the SRGs _starfish_output/${prefix}.filt.SRGs_combined.gff_ 
+The metadata file (-m) needs to be created, a simple tsv with two column, sample in the first column and then species (as given on ncbi) in the second column
 
 	cargobay.sh -e elements.fa -b elements.bed -a assemblies.fa -g annotation.gff3 -m metadata.tsv
 	
