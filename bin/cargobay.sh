@@ -313,7 +313,7 @@ echo "contig;start;end;sense;name;label" | tr ';' '\t' > 2.HGT_candidates/genes.
 cat ${gff3path} | awk -F "\t" '{if($3 == "mRNA") print $1"\t"$4"\t"$5"\t"$7"\t"$9}' | awk -F ";Name=" '{print $0"\t"$NF}' | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6}' | awk -v identifier="$identifier"  '{if($5 ~ "_"identifier) {print $0"\ttyrR"} else if($5 ~ "_myb") {print $0"\tmyb"} else if($5 ~ "_duf3723") {print $0"\tduf3723"} else {print $0"\tNA"}}' >> 2.HGT_candidates/genes.bed
 
 ##loop through candidate files for each alignment etc
-tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv  | cut -f1 | sort -u | while read element
+tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv  | awk -F "\t" '{print $1}' | sort -u | while read element
 do
 
 mkdir 2.HGT_candidates/alignments/${element}/
@@ -421,7 +421,7 @@ echo "Step 2b: Running BLASTall analyses and plotting alongside alignments"
 
 ###NEED TRANSCRIPTOME FOR THIS!!!!!
 
-blastn -dust no -max_target_seqs 1 -max_hsps 1 -target 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${TRANSCRIPTOME} -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa
+#blastn -dust no -max_target_seqs 1 -max_hsps 1 -target 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${TRANSCRIPTOME} -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa
 
 
 ####################################################################################################################################################################################################################################################################################################################################################
@@ -433,73 +433,29 @@ blastn -dust no -max_target_seqs 1 -max_hsps 1 -target 2.HGT_candidates/alignmen
 ################## CREATE BLAST-ALL PLOT DATA ##################
 
 ##have to reset a variable with the starship genome to use to find the genes in the 'transcriptome' folder
-oggenome=$( echo ${starship} | awk -F "_" '{print $1}' )
+#oggenome=$( echo ${starship} | awk -F "_" '{print $1}' )
 ##search using all the genes in the blastdb 
 ## taking only the best hit (-max_target_seqs 1 -max_hsps 1)
 ##and performing no filtering for repeat regions (-dust no)
-blastn -dust no -max_target_seqs 1 -max_hsps 1 -db alignments/${starship}/${starship}.${genome2}.fa -query ../transcriptome/${oggenome}.fa -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' > alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.tsv
+#blastn -dust no -max_target_seqs 1 -max_hsps 1 -db alignments/${starship}/${starship}.${genome2}.fa -query ../transcriptome/${oggenome}.fa -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' > alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.tsv
 
-conda deactivate
+#conda deactivate
 ##get list of genes inside the starship to label them as such
-start=$( cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print $4}' )
-end=$( cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print $5}' )
-cat ../magory.tyr.mod.consolidated.gff | grep ^"${oggenome}_" | awk -F "\t" -v starshipcontig="$starshipcontig" -v start="$start" -v end="$end" '{if($1==starshipcontig && $4 > start && $5 < end) {print "starship;"$9} else {print "NA;"$9}}' | awk -F ";" '{print $(NF-1)"\t"$1}' | sed 's/Name=//g' > alignments/${starship}/${starship}.${genome2}.transcriptome_starship_association.tsv
+#start=$( cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print $4}' )
+#end=$( cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print $5}' )
+#cat ../magory.tyr.mod.consolidated.gff | grep ^"${oggenome}_" | awk -F "\t" -v starshipcontig="$starshipcontig" -v start="$start" -v end="$end" '{if($1==starshipcontig && $4 > start && $5 < end) {print "starship;"$9} else {print "NA;"$9}}' | awk -F ";" '{print $(NF-1)"\t"$1}' | sed 's/Name=//g' > alignments/${starship}/${starship}.${genome2}.transcriptome_starship_association.tsv
 ##now take this list and grab the blastn data if it exists, if not just mark it down as 0
-echo "gene;identity;length;class" | tr ';' '\t' > alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.class.tsv
-cat alignments/${starship}/${starship}.${genome2}.transcriptome_starship_association.tsv | while read line
-do
-gene=$( echo "${line}" | awk '{print $1}' )
-class=$( echo "${line}" | awk '{print $2}' )
-cat alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.tsv | awk -v gene="$gene" -v class="$class" -v oggenome="$oggenome"  'BEGIN{id="0" ; len="0"} {if(oggenome"_"$1 == gene) {id=$2;len=$3}} END{print gene"\t"id"\t"len"\t"class}'
-done >> alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.class.tsv
+#echo "gene;identity;length;class" | tr ';' '\t' > alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.class.tsv
+#cat alignments/${starship}/${starship}.${genome2}.transcriptome_starship_association.tsv | while read line
+#do
+#gene=$( echo "${line}" | awk '{print $1}' )
+#class=$( echo "${line}" | awk '{print $2}' )
+#cat alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.tsv | awk -v gene="$gene" -v class="$class" -v oggenome="$oggenome"  'BEGIN{id="0" ; len="0"} {if(oggenome"_"$1 == gene) {id=$2;len=$3}} END{print gene"\t"id"\t"len"\t"class}'
+#done >> alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.class.tsv
 
 
 ######################################################
 
-
-##remove genome now that contig is extracted
-rm alignments/${starship}/${starship}.${genome2}.fa
-##align all vs all and each starship vs all contigs for each genome (extracted from the all vs all alignment)
-conda activate mummer4
-nucmer --maxmatch --delta alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.nucmer.delta alignments/${starship}/${starship}.${genome2}.aligned_contigs.fa alignments/${starship}/${starship}.${genome2}.aligned_contigs.fa
-conda deactivate
-##convert to paf format and remove self matches
-paftools.js delta2paf alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.nucmer.delta | awk -F "\t" '{if($1 != $6) print}' > alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.nucmer.paf
-
-
-## 3. a bed file of the regions aligned wanted to be visualised 
-## this includes just the starship and gap contig +- flanking regions
-## also includes just the aligned contigs with using the max and min regions with >10kb alignment in the paf +- flanking regions
-echo "contig;start;end;coords;species" | tr ';' '\t' > alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.bed
-##add starship coordinates (plus the species name and starship name)
-cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print}' | cut -f3-5 | awk '{print $1"\t"$1"\t"$2"\t"$3}'  | awk -v flank="$flank" -v starship="$starship"  '{print $2"\t"$3-flank"\t"$4+flank"\tP."$1":"starship}' | awk '{if($2 < 0) {print $1"\t0\t"$3"\t"$1":"$2"-"$3"\t"$4} else {print $1"\t"$2"\t"$3"\t"$1":"$2"-"$3"\t"$4}}' >> alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.bed
-##add the aligned contigs coordinates (plus the flanking buffer)
-cat alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.nucmer.paf | awk '{if($11 > 7500) print}' | cut -f1 | sort -u | grep -v ${starshipcontig} | while read contig
-do
-## calculate length of contig so that the flanks are not over extended
-maxlength=$( echo "${contig}" | seqkit grep --quiet -f - alignments/${starship}/${starship}.${genome2}.aligned_contigs.fa | grep -v ">" | tr -d '\n' | wc -c  )
-edges=$( cat alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.nucmer.paf | awk '{if($11 > 7500) print}' | grep ^"${contig}" | awk -v flank="$flank" 'BEGIN{max=0; min=99999999999999} {if($4 > max) {max=$4}; if($3 < min) {min=$3}} END{print min-flank"\t"max+flank}' | awk '{if($1 < 0) {print 0"\t"$2} else {print}}' | awk -F "\t" -v maxlength="$maxlength" '{if($2 > maxlength) {print $1"\t"maxlength} else {print}}' | sed 's/99999999949999/0/g'  )
-species=$( cat starships.pezizomycotina_ncbi.blastn.${minidentity}pid_${minlength2}kb_filt.metadata_plus.tsv  | awk -F "\t" -v contig="$contig" '{if($2 == contig) print $9}' | sort -u )
-echo "${contig};${edges};${species}" | tr ';' '\t' | awk '{print $1"\t"$2"\t"$3"\t"$1":"$2"-"$3"\t"$4}'
-done >> alignments/${starship}/${starship}.contig.${genome2}.aligned_contigs.bed
-
-
-## now generate per combination a specific R file for generating plots using gggenomes
-## we will use the alignment_plotting.template.R in scratch/saodonnell/projects/${dataset}/starfish/pezizomycotina_BLAST
-## to do so we just need to change a few terms, i.e. the file names for each of the four files used as input
-cp /scratch/saodonnell/projects/genomegraphs/${dataset}/alignment_plotting.template.2.R alignments/${starship}/${starship}.${genome2}.R
-## first swap in all the positions for the starship name
-sed -i "s/STARSHIP/${starship}/g" alignments/${starship}/${starship}.${genome2}.R
-##now the genome
-sed -i "s/GENOME/${genome2}/" alignments/${starship}/${starship}.${genome2}.R
-
-
-rm alignments/${starship}/${starship}.${genome2}.aligned_contigs.fa
-done
-
-gzip alignments/${starship}/${starship}.contig.fa
-
-done
 
 
 ####################################################################################################################################################################################################################################################################################################################################################
