@@ -335,6 +335,18 @@ samtools faidx ${assembliespath} ${coords2} > 2.HGT_candidates/alignments/${elem
 echo "contig;start;end" | tr ';' '\t' > 2.HGT_candidates/alignments/${element}/${element}.element.bed
 echo "${coords}" >> 2.HGT_candidates/alignments/${element}/${element}.element.bed
 
+## breaking genome into 1kb chunks for blast-all later
+## make symbolic link to assemblies 
+ln -sf ${assembliespath} ./assemblies.fa
+## make samtools index file
+samtools faidx assemblies.fa 
+## format bed file for makewindows
+cat assemblies.fa.fai | awk -v sample="$sample" -v separator="$separator" '{if($1 ~ ("^" sample separator)) print $1"\t1\t"$2}' > ${sample}.bed
+## break genome into 1kb chunks
+bedtools makewindows -w 1000 -b ${sample}.bed > ${sample}.1kbchunk.bed
+## get fasta file for each of the 1kb chunks
+bedtools getfasta -bed ${sample}.1kbchunk.bed -fi ${assembliespath} > ${sample}.1kbchunk.fa
+
 ##loop through the assemblies for each candidate; download them, create a single concantenated fasta file with mild renaming
 tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -v element="$element" '{if($1 == element) {print $2}}' | sort -u | while read candidategenome
 do
@@ -374,8 +386,10 @@ echo "contig;start;end;coords;tag" | tr ';' '\t' > 2.HGT_candidates/alignments/$
 ##first have to calculate the contig length to make sure the flank extension doesn't exceed the contig size (would plot erroneous extensions)
 maxlength=$( echo "${contig}" | seqkit grep --quiet -f - 2.HGT_candidates/alignments/${element}/${element}.contig.fa | grep -v ">" | tr -d '\n' | wc -c )
 echo "${coords}" | awk -v flank="$flank" -v element="$element"  '{print $1"\t"$2-flank"\t"$3+flank"\t"element}' | awk '{if($2 < 0) {print $1"\t0\t"$3"\t"$1":"$2"-"$3"\t"$4} else {print $1"\t"$2"\t"$3"\t"$1":"$2"-"$3"\t"$4}}' | awk -v maxlength="$maxlength" '{if($3 > maxlength) {print $1"\t"$2"\t"maxlength"\t"$1":"$2"-"maxlength"\t"$5} else {print}}'  >> 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.aligned_regions.bed
+
 ##add the aligned contigs coordinates (plus the flanking buffer)
 cat 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.deltafilt.paf | awk -F "\t" '{print $6}' | sort -u | while read candidatecontig
+
 do
 ## calculate length of contig so that the flanks are not over extended
 maxlength=$( echo "${candidatecontig}" | seqkit grep --quiet -f - 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa | grep -v ">" | tr -d '\n' | wc -c  )
@@ -392,6 +406,17 @@ nucmer -t ${threads} --delta 2.HGT_candidates/alignments/${element}/${element}.$
 ##this this alignment for the actual plotting though (pre-filtering so we can see complex regions etc)
 paftools.js delta2paf 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.contigs.delta | awk -F "\t" '{if($1 != $6) print}' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.contigs.delta.paf
 
+## blast-all
+# run the blast of 1kb chunks against the genome with HGT candidate
+blastn -dust no -max_target_seqs 1 -max_hsps 1 -subject 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${sample}.1kbchunk.fa -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' | sed -E 's/[:\-]/\t/g' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv
+# set variables
+contig=$( echo "${coords}" | awk '{print $1}' )
+start=$(echo "${coords}" | awk '{print $2}')
+end=$(echo "${coords}" | awk '{print $3}')
+# make a new file with the header
+echo "contig;start;end;identity;length;class" | tr ';' '\t' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.class.tsv
+# add starship/NA class to blast tsv
+cat 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv | awk -v contig="$contig" -v start="$start" -v end="$end" '{if($1 == contig && $2 > (start-500) && $3 < (end+500)) {print $0"\tstarship"} else {print $0"\tNA"} }' >> 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.class.tsv
 
 
 ##remove the full genome (no need for it now)
