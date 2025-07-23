@@ -88,3 +88,31 @@ suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignmen
 suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.allvall.png", plot = plot2, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
 suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.allvall.svg", plot = plot2, units = "in", height = heightFrac, width = widthFrac, limitsize = FALSE)))
 
+
+##the blastall plots now
+blastn=read.csv("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.blast.class.tsv", header=T, sep='\t')
+
+##plot both all the raw data next to the distributions with a simple test for differences in the median
+##only considering alignments greater than 750bp
+b1=ggplot()+
+  geom_point(data=subset(blastn, identity > 0 & length > 750), aes(x=length/1000, y=identity), alpha=0.75,show.legend = F, colour="grey")+
+  geom_point(data=subset(blastn, identity > 0 & length > 750 & class == "starship"), aes(x=length/1000, y=identity), alpha=0.75,show.legend = F, colour="red")+
+  theme_pubr()+
+  xlim(0.75,1)+
+  ylim(60,100)+
+  labs(x="Length (kb)", y="Identity (%)")
+b2=ggplot(data=subset(blastn, identity > 0 & length > 750), aes(x=class, y=identity, colour=class))+
+  geom_half_boxplot(width=0.7, outlier.shape = NA, nudge = .12)+
+  geom_half_point(width=0.3, alpha=0.5)+
+  scale_colour_manual(values="red")+
+  theme_pubr(legend = "none")+
+  ylim(60,100)+
+  stat_compare_means(aes(label = ..p.signif..),label.x = 1.5, hide.ns = "FALSE", method = "wilcox.test", label = "p.format", label.y = 65, hjust=0.5)+
+  theme(axis.title.y=element_blank(),axis.ticks.y = element_blank(), axis.line.y = element_blank(), , axis.text.y = element_blank(),axis.ticks.x = element_blank(), axis.line.x = element_blank(),axis.text.x  = element_blank())+xlab("")
+
+b3=ggarrange(b1,b2, widths = c(4,1))
+
+
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.blastall.png", plot = b3, units = "in", height = 5 , width = 6, limitsize = FALSE)))
+suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.blastall.svg", plot = b3, units = "in", height = 5, width = 6, limitsize = FALSE)))
+
