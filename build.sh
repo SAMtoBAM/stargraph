@@ -6,6 +6,7 @@
 cd ${SRC_DIR}
 mkdir -p $PREFIX/main $PREFIX/aux $PREFIX/db $PREFIX/lib
 cp -r bin/* $PREFIX/bin/
+cp -r db/* $PREFIX/db/
 
 
 # compile CNEFinder
