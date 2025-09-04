@@ -92,7 +92,12 @@ case "$key" in
     "
     exit
     ;;
-    esac
+    *)  # catch invalid args
+    echo "ERROR: Unknown option: '$1'"
+    echo "Run 'starfish_wrapper.sh -h' to see valid options"
+    exit 1
+    ;;
+	esac
 done
 
 
