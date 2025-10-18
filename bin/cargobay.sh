@@ -352,21 +352,35 @@ bedtools makewindows -w 1000 -b ${sample}.bed > ${sample}.1kbchunk.bed
 ## get fasta file for each of the 1kb chunks
 bedtools getfasta -bed ${sample}.1kbchunk.bed -fi ${assembliespath} > ${sample}.1kbchunk.fa
 
+##first download all assemblies labelled as a candidate for the strain
+assemblies=$( tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -v element="$element" '{if($1 == element) {print $2}}' | sort -u | awk '{sum=$1" "sum} END{print sum}' )
+datasets download genome accession ${assemblies} --no-progressbar
+unzip -qq ncbi_dataset.zip 
+rm ncbi_dataset.zip
+ls ncbi_dataset/data/ | grep -v json | while read genome
+do
+genome2=$( echo $genome | sed 's/_//g' | awk -F "." '{print $1}' )
+cat ncbi_dataset/data/$genome/$genome*.fna | awk -F " " -v genome="$genome" '{if($1 ~ ">") {print ">"genome"_XXX"$1} else {print}}' | sed 's/_XXX>/_/g'   > 2.HGT_candidates/alignments/${element}/${element}.${genome2}.fa
+done
+rm -r ncbi_dataset
+rm README.md
+rm md5sum.txt
+
 ##loop through the assemblies for each candidate; download them, create a single concantenated fasta file with mild renaming
 tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -v element="$element" '{if($1 == element) {print $2}}' | sort -u | while read candidategenome
 do
 candidategenome2=$( echo $candidategenome | sed 's/_//g' | awk -F "." '{print $1}' )
 
-datasets download genome accession ${candidategenome} --no-progressbar
-unzip -qq ncbi_dataset.zip 
-rm ncbi_dataset.zip
-ls ncbi_dataset/data/ | grep -v json | while read genome
-do
-cat ncbi_dataset/data/$genome/$genome*.fna | awk -F " " -v genome="$genome" '{if($1 ~ ">") {print ">"genome"_XXX"$1} else {print}}' | sed 's/_XXX>/_/g' 
-done > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa
-rm -r ncbi_dataset
-rm README.md
-rm md5sum.txt
+#datasets download genome accession ${candidategenome} --no-progressbar
+#unzip -qq ncbi_dataset.zip 
+#rm ncbi_dataset.zip
+#ls ncbi_dataset/data/ | grep -v json | while read genome
+#do
+#cat ncbi_dataset/data/$genome/$genome*.fna | awk -F " " -v genome="$genome" '{if($1 ~ ">") {print ">"genome"_XXX"$1} else {print}}' | sed 's/_XXX>/_/g' 
+#done > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa
+#rm -r ncbi_dataset
+#rm README.md
+#rm md5sum.txt
 
 ##now using nucmer to align the contigs (will be used for plotting)
 ##and also use these alignments define the contigs/regions of interest to plot
