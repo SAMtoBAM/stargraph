@@ -36,6 +36,7 @@ requirements:
   - conda-forge::r-tidyverse=2.0.0
   - conda-forge::r-ggforce=0.5.0
   - conda-forge::r-ggpubr=0.6.0
+  - conda-forge::r-gghalves=0.1.4
   - conda-forge::ncbi-datasets-cli=18.3.1
   - samtools=1.6
   - bioconda::sourmash>=4.9.0
