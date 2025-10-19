@@ -308,7 +308,7 @@ minidentity="80"
 
 ##now we have candidates based just on kmer similarity however we now want to go through and look at whether alignments suggest transfer also
 
-echo "Step 2a: Getting sourmash based candidates and generating actual alignments"
+echo "Step 2a: Running global alignments and BLAST-all identity tests on k-mer based candidates"
 
 mkdir 2.HGT_candidates
 mkdir 2.HGT_candidates/alignments
@@ -460,56 +460,10 @@ done
 
 done
 
-
-echo "Step 2b: Running BLASTall analyses and plotting alongside alignments"
-
-###NEED TRANSCRIPTOME FOR THIS!!!!!
-
-#blastn -dust no -max_target_seqs 1 -max_hsps 1 -target 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${TRANSCRIPTOME} -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa
-
-
 ####################################################################################################################################################################################################################################################################################################################################################
 ####################################################################################################################################################################################################################################################################################################################################################
 ####################################################################################################################################################################################################################################################################################################################################################
 ####################################################################################################################################################################################################################################################################################################################################################
-
-
-################## CREATE BLAST-ALL PLOT DATA ##################
-
-##have to reset a variable with the starship genome to use to find the genes in the 'transcriptome' folder
-#oggenome=$( echo ${starship} | awk -F "_" '{print $1}' )
-##search using all the genes in the blastdb 
-## taking only the best hit (-max_target_seqs 1 -max_hsps 1)
-##and performing no filtering for repeat regions (-dust no)
-#blastn -dust no -max_target_seqs 1 -max_hsps 1 -db alignments/${starship}/${starship}.${genome2}.fa -query ../transcriptome/${oggenome}.fa -outfmt 6 | awk '{print $1"\t"$3"\t"$4}' > alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.tsv
-
-#conda deactivate
-##get list of genes inside the starship to label them as such
-#start=$( cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print $4}' )
-#end=$( cat ../${dataset}.starships_subtracted.nonredundant_starships_SLRs.UPDATE.tsv | awk -v starship="$starship" '{if($1 == starship) print $5}' )
-#cat ../magory.tyr.mod.consolidated.gff | grep ^"${oggenome}_" | awk -F "\t" -v starshipcontig="$starshipcontig" -v start="$start" -v end="$end" '{if($1==starshipcontig && $4 > start && $5 < end) {print "starship;"$9} else {print "NA;"$9}}' | awk -F ";" '{print $(NF-1)"\t"$1}' | sed 's/Name=//g' > alignments/${starship}/${starship}.${genome2}.transcriptome_starship_association.tsv
-##now take this list and grab the blastn data if it exists, if not just mark it down as 0
-#echo "gene;identity;length;class" | tr ';' '\t' > alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.class.tsv
-#cat alignments/${starship}/${starship}.${genome2}.transcriptome_starship_association.tsv | while read line
-#do
-#gene=$( echo "${line}" | awk '{print $1}' )
-#class=$( echo "${line}" | awk '{print $2}' )
-#cat alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.tsv | awk -v gene="$gene" -v class="$class" -v oggenome="$oggenome"  'BEGIN{id="0" ; len="0"} {if(oggenome"_"$1 == gene) {id=$2;len=$3}} END{print gene"\t"id"\t"len"\t"class}'
-#done >> alignments/${starship}/${starship}.${genome2}.transcriptome_blastn.class.tsv
-
-
-######################################################
-
-
-
-####################################################################################################################################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################################################################################################################################
-
-
-
-
 
 
 
@@ -519,3 +473,5 @@ then
 rm -r 0.database/genbank-20250408-fungi-k21.zip
 
 fi
+
+echo "All complete; hope you enjoyed your time at cargobay"
