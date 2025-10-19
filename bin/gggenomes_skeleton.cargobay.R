@@ -94,8 +94,11 @@ suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignmen
 ##the blastall plots now
 blastn=read.csv("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.blast.class.tsv", header=T, sep='\t')
 
+##change NAs to not starship
+blastn$class[is.na(blastn$class)] <- "not-starship"
+
 ##plot both all the raw data next to the distributions with a simple test for differences in the median
-##only considering alignments greater than 750bp
+##only considering alignments greater than 900bp
 b1=ggplot()+
   geom_point(data=subset(blastn, identity > 0 & length > 900 & class != "starship"), aes(x=length/1000, y=identity), alpha=0.1, show.legend = F, colour="grey")+
   geom_point(data=subset(blastn, identity > 0 & length > 900 & class == "starship"), aes(x=length/1000, y=identity), alpha=0.2, show.legend = F, colour="red")+
