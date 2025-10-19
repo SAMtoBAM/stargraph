@@ -109,7 +109,7 @@ b1=ggplot()+
 b2=ggplot(data=subset(blastn, identity > 0 & length > 900), aes(x=class, y=identity, colour=class))+
   geom_half_boxplot(width=0.7, outlier.shape = NA, nudge = .12)+
   geom_half_point(width=0.3, alpha=0.5)+
-  scale_colour_manual(values="red")+
+  scale_colour_manual(values=c("red", "grey"))+
   theme_pubr(legend = "none")+
   ylim(60,100)+
   stat_compare_means(aes(label = ..p.signif..),label.x = 1.5, hide.ns = "FALSE", method = "wilcox.test", label = "p.format", label.y = 65, hjust=0.5)+
