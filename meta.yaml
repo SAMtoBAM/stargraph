@@ -29,6 +29,7 @@ requirements:
   - conda-forge::r-gggenomes=1.0.1
   - conda-forge::r-svglite=2.1.3
   - bioconda::bioconductor-iranges=2.40.0
+  - conda-forge::r-ggplot=3.5.2
   - conda-forge::r-ggnewscale=0.5.1
   - conda-forge::r-igraph=2.0.3
   - conda-forge::r-ggraph=2.2.1
