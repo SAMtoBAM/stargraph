@@ -7,6 +7,8 @@ options(warn = -1)
 suppressMessages(library(IRanges))
 suppressMessages(library(gggenomes))
 suppressMessages(library(ggnewscale))
+suppressMessages(library(ggpubr))
+suppressMessages(library(gghalves))
 
 ##need four features
 
@@ -92,19 +94,23 @@ suppressMessages(suppressWarnings(ggsave("PATHTOOUTPUT/2.HGT_candidates/alignmen
 ##the blastall plots now
 blastn=read.csv("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDIDATEGENOME2.blast.class.tsv", header=T, sep='\t')
 
+##change NAs to not starship
+blastn$class[is.na(blastn$class)] <- "not-starship"
+blastn$class <- factor(blastn$class, levels = c("starship", "not-starship"))
+
 ##plot both all the raw data next to the distributions with a simple test for differences in the median
-##only considering alignments greater than 750bp
+##only considering alignments greater than 900bp
 b1=ggplot()+
-  geom_point(data=subset(blastn, identity > 0 & length > 900 & class != "starship"), aes(x=length/1000, y=identity), alpha=0.1, show.legend = F, colour="grey")+
-  geom_point(data=subset(blastn, identity > 0 & length > 900 & class == "starship"), aes(x=length/1000, y=identity), alpha=0.2, show.legend = F, colour="red")+
+  geom_point(data=subset(blastn, identity > 0 & length > 900 & class != "starship"), aes(x=length, y=identity), alpha=0.1, show.legend = F, colour="grey")+
+  geom_point(data=subset(blastn, identity > 0 & length > 900 & class == "starship"), aes(x=length, y=identity), alpha=0.2, show.legend = F, colour="red")+
   theme_pubr()+
-  xlim(0.9,1)+
+  xlim(899,1001)+
   ylim(60,100)+
-  labs(x="Length (kb)", y="Identity (%)")
+  labs(x="Length (bp)", y="Identity (%)")
 b2=ggplot(data=subset(blastn, identity > 0 & length > 900), aes(x=class, y=identity, colour=class))+
   geom_half_boxplot(width=0.7, outlier.shape = NA, nudge = .12)+
   geom_half_point(width=0.3, alpha=0.5)+
-  scale_colour_manual(values="red")+
+  scale_colour_manual(values=c("red", "grey"))+
   theme_pubr(legend = "none")+
   ylim(60,100)+
   stat_compare_means(aes(label = ..p.signif..),label.x = 1.5, hide.ns = "FALSE", method = "wilcox.test", label = "p.format", label.y = 65, hjust=0.5)+
