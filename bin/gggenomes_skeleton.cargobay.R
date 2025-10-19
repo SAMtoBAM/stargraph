@@ -96,6 +96,7 @@ blastn=read.csv("PATHTOOUTPUT/2.HGT_candidates/alignments/ELEMENT/ELEMENT.CANDID
 
 ##change NAs to not starship
 blastn$class[is.na(blastn$class)] <- "not-starship"
+blastn$class <- factor(blastn$class, levels = c("starship", "not-starship"))
 
 ##plot both all the raw data next to the distributions with a simple test for differences in the median
 ##only considering alignments greater than 900bp
@@ -105,7 +106,7 @@ b1=ggplot()+
   theme_pubr()+
   xlim(0.9,1)+
   ylim(60,100)+
-  labs(x="Length (kb)", y="Identity (%)")
+  labs(x="Length (bp)", y="Identity (%)")
 b2=ggplot(data=subset(blastn, identity > 0 & length > 900), aes(x=class, y=identity, colour=class))+
   geom_half_boxplot(width=0.7, outlier.shape = NA, nudge = .12)+
   geom_half_point(width=0.3, alpha=0.5)+
