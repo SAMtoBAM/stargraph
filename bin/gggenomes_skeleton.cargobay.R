@@ -7,6 +7,8 @@ options(warn = -1)
 suppressMessages(library(IRanges))
 suppressMessages(library(gggenomes))
 suppressMessages(library(ggnewscale))
+suppressMessages(library(ggpubr))
+suppressMessages(library(gghalves))
 
 ##need four features
 
