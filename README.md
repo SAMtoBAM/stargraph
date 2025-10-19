@@ -145,7 +145,11 @@ Use the allstars module in order to classify your elements using a manually cura
 
 # STEP 7 Running cargobay
 
-Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species
+Use a database of all public fungal assemblies on NCBI (thank you sourmash team!) in order to look for your elements in other species. <br/>
+Take identified candidates and run alignments and blast comparisons to detect true cases of HGT. <br/>
+Blast analyses split the genome containing your element into 1kb chunks then BLAST these regions against the entire candidate assembly <br/>
+The 1kb chunks are then split into starship/non-starship and compared; looking for distinct differences in the identity. <br/>
+Plots of the element alignment and BLAST comparisons are produced in 'cargobay_output/2.HGT_alignments/alignments/_ELEMENT_/'
 
 The elements fasta file (-e) can be the _stargraph_output/4.SLR_starship_combination/\*.starships_SLRs.fa_ <br/>
 The bed file (-b) can be the _stargraph_output/4.SLR_starship_combination/\*.starships_SLRs.bed_ <br/>
