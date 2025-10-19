@@ -101,10 +101,10 @@ blastn$class <- factor(blastn$class, levels = c("starship", "not-starship"))
 ##plot both all the raw data next to the distributions with a simple test for differences in the median
 ##only considering alignments greater than 900bp
 b1=ggplot()+
-  geom_point(data=subset(blastn, identity > 0 & length > 900 & class != "starship"), aes(x=length/1000, y=identity), alpha=0.1, show.legend = F, colour="grey")+
-  geom_point(data=subset(blastn, identity > 0 & length > 900 & class == "starship"), aes(x=length/1000, y=identity), alpha=0.2, show.legend = F, colour="red")+
+  geom_point(data=subset(blastn, identity > 0 & length > 900 & class != "starship"), aes(x=length, y=identity), alpha=0.1, show.legend = F, colour="grey")+
+  geom_point(data=subset(blastn, identity > 0 & length > 900 & class == "starship"), aes(x=length, y=identity), alpha=0.2, show.legend = F, colour="red")+
   theme_pubr()+
-  xlim(0.9,1)+
+  xlim(899,1001)+
   ylim(60,100)+
   labs(x="Length (bp)", y="Identity (%)")
 b2=ggplot(data=subset(blastn, identity > 0 & length > 900), aes(x=class, y=identity, colour=class))+
