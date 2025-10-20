@@ -354,7 +354,33 @@ bedtools getfasta -bed ${sample}.1kbchunk.bed -fi ${assembliespath} > ${sample}.
 
 ##first download all assemblies labelled as a candidate for the strain
 assemblies=$( tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -v element="$element" '{if($1 == element) {print $2}}' | sort -u | awk '{sum=$1" "sum} END{print sum}' )
-datasets download genome accession ${assemblies} --no-progressbar
+#Simple function to check NCBI API connection is possible and to try until it is (otherwise entire script can fail due to one missed connection)
+check_ncbi_connection() {
+    local url="https://api.ncbi.nlm.nih.gov/datasets/v2/genome/dataset_report"
+    local max_retries=5
+    local delay=120  # seconds between retries
+
+    for ((i=1; i<=max_retries; i++)); do
+        if curl -sI --connect-timeout 10 --max-time 15 "$url" -o /dev/null; then
+            return 0
+        else
+            echo "Connection to NCBI datasets failed; will try again in 2 minutes (timeout or network issue). Attempt $i/$max_retries..."
+            if [[ $i -lt $max_retries ]]; then
+                sleep $delay
+            fi
+        fi
+    done
+
+    return 1
+}
+
+if check_ncbi_connection; then
+    datasets download genome accession ${assemblies} --no-progressbar
+else
+    echo "Could not connect to NCBI datasets; Cannot continue analysis sorry; bye bye"
+    exit 1
+fi
+
 unzip -qq ncbi_dataset.zip 
 rm ncbi_dataset.zip
 ls ncbi_dataset/data/ | grep -v json | while read genome
