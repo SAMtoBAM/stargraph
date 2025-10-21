@@ -224,7 +224,7 @@ mkdir 1.database_search
 ##create a temporary file removing anything after a space in the header of the fasta (sourmash keeps things after the space otherwise)
 awk -F " " '{print $1}' ${elementspath} > 1.database_search/temp.fa 
 ##create a 1000 scaled; 21 kmer signature database (needs to be 1000 scaled due to the fungal database being built as so)
-sourmash sketch dna -p scaled=1000,k=21 1.database_search/temp.fa --singleton -o 1.database_search/${prefix}.elements.sig
+sourmash sketch dna -p scaled=1000,k=21 1.database_search/temp.fa --singleton -o 1.database_search/${prefix}.elements.sig 2>1.database_search/sourmash.log
 rm 1.database_search/temp.fa 
 
 ##then use gather to find similarities, use the multi version to search for multiple singatures simultaneously and then fast version to speed it up
@@ -233,7 +233,7 @@ rm 1.database_search/temp.fa
 #sourmash scripts fastmultigather test.SLRs.1000.sig 0.database/genbank-20250408-fungi-k21.zip -o test_fastgather -k 21 --cores ${threads}
 
 ##use multisearch instead which can be multithreaded and accept multiple singatures in a single file
-sourmash scripts multisearch --quiet 1.database_search/${prefix}.elements.sig 0.database/genbank-20250408-fungi-k21.zip -o 1.database_search/${prefix}.sourmash_multisearch.csv -k 21 --cores ${threads}
+sourmash scripts multisearch --quiet 1.database_search/${prefix}.elements.sig 0.database/genbank-20250408-fungi-k21.zip -o 1.database_search/${prefix}.sourmash_multisearch.csv -k 21 --cores ${threads} 2>1.database_search/sourmash.log
 
 
 #####################################################################################
