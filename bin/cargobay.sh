@@ -453,7 +453,7 @@ paftools.js delta2paf 2.HGT_candidates/alignments/${element}/${element}.${candid
 
 ## blast-all
 # run the blast of 1kb chunks against the genome with HGT candidate
-blastn -dust no -max_target_seqs 1 -max_hsps 1 -subject 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${sample}.1kbchunk.fa -outfmt 6 | awk '{print $1"\t"$3"\t"($8-$7)}' | sed -E 's/[:\-]/\t/g' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv
+blastn -dust no -max_target_seqs 1 -max_hsps 1 -subject 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${sample}.1kbchunk.fa -outfmt 6 2>/dev/null | awk '{print $1"\t"$3"\t"($8-$7)}' | sed -E 's/[:\-]/\t/g' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv
 # set variables
 contig=$( echo "${coords}" | awk '{print $1}' )
 start=$(echo "${coords}" | awk '{print $2}')
