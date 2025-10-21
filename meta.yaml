@@ -38,7 +38,7 @@ requirements:
   - conda-forge::r-ggforce=0.5.0
   - conda-forge::r-ggpubr=0.6.0
   - conda-forge::r-gghalves=0.1.4
-  - conda-forge::ncbi-datasets-cli=18.3.1
+  - conda-forge::ncbi-datasets-cli=18.9.0
   - samtools=1.6
   - bioconda::sourmash>=4.9.0
   - conda-forge::sourmash_plugin_branchwater=0.9.13
