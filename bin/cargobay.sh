@@ -317,6 +317,23 @@ mkdir 2.HGT_candidates/alignments
 echo "contig;start;end;sense;name;label" | tr ';' '\t' > 2.HGT_candidates/genes.bed
 cat ${gff3path} | awk -F "\t" '{if($3 == "mRNA") print $1"\t"$4"\t"$5"\t"$7"\t"$9}' | awk -F ";Name=" '{print $0"\t"$NF}' | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6}' | awk -v identifier="$identifier"  '{if($5 ~ "_"identifier) {print $0"\ttyrR"} else if($5 ~ "_myb") {print $0"\tmyb"} else if($5 ~ "_duf3723") {print $0"\tduf3723"} else {print $0"\tNA"}}' >> 2.HGT_candidates/genes.bed
 
+
+##first download all assemblies labelled as a candidate for the strain
+mkdir 2.HGT_candidates/assemblies/
+assemblies=$( tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -F "\t" '{print $2}' | sort -u | awk '{sum=$1" "sum} END{print sum}' )
+datasets download genome accession ${assemblies} --no-progressbar
+unzip -qq ncbi_dataset.zip 
+rm ncbi_dataset.zip
+ls ncbi_dataset/data/ | grep -v json | while read genome
+do
+genome2=$( echo $genome | sed 's/_//g' | awk -F "." '{print $1}' )
+cat ncbi_dataset/data/$genome/$genome*.fna | awk -F " " -v genome="$genome" '{if($1 ~ ">") {print ">"genome"_XXX"$1} else {print}}' | sed 's/_XXX>/_/g'   > 2.HGT_candidates/assemblies/${genome2}.fa
+done
+rm -r ncbi_dataset
+rm README.md
+rm md5sum.txt
+
+
 ##loop through candidate files for each alignment etc
 tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv  | awk -F "\t" '{print $1}' | sort -u | while read element
 do
@@ -352,46 +369,6 @@ bedtools makewindows -w 1000 -b ${sample}.bed > ${sample}.1kbchunk.bed
 ## get fasta file for each of the 1kb chunks
 bedtools getfasta -bed ${sample}.1kbchunk.bed -fi ${assembliespath} > ${sample}.1kbchunk.fa
 
-##first download all assemblies labelled as a candidate for the strain
-assemblies=$( tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -v element="$element" '{if($1 == element) {print $2}}' | sort -u | awk '{sum=$1" "sum} END{print sum}' )
-#Simple function to check NCBI API connection is possible and to try until it is (otherwise entire script can fail due to one missed connection)
-check_ncbi_connection() {
-    local url="https://api.ncbi.nlm.nih.gov/datasets/v2/genome/dataset_report"
-    local max_retries=5
-    local delay=120  # seconds between retries
-
-    for ((i=1; i<=max_retries; i++)); do
-        if curl -sI --connect-timeout 10 --max-time 15 "$url" -o /dev/null; then
-            return 0
-        else
-            echo "Connection to NCBI datasets failed; will try again in 2 minutes (timeout or network issue). Attempt $i/$max_retries..."
-            if [[ $i -lt $max_retries ]]; then
-                sleep $delay
-            fi
-        fi
-    done
-
-    return 1
-}
-
-if check_ncbi_connection; then
-    datasets download genome accession ${assemblies} --no-progressbar
-else
-    echo "Could not connect to NCBI datasets; Cannot continue analysis sorry; bye bye"
-    exit 1
-fi
-
-unzip -qq ncbi_dataset.zip 
-rm ncbi_dataset.zip
-ls ncbi_dataset/data/ | grep -v json | while read genome
-do
-genome2=$( echo $genome | sed 's/_//g' | awk -F "." '{print $1}' )
-cat ncbi_dataset/data/$genome/$genome*.fna | awk -F " " -v genome="$genome" '{if($1 ~ ">") {print ">"genome"_XXX"$1} else {print}}' | sed 's/_XXX>/_/g'   > 2.HGT_candidates/alignments/${element}/${element}.${genome2}.fa
-done
-rm -r ncbi_dataset
-rm README.md
-rm md5sum.txt
-
 ##loop through the assemblies for each candidate; download them, create a single concantenated fasta file with mild renaming
 tail -n+2 1.database_search/${prefix}.sourmash_multisearch.candidates.final.tsv | awk -v element="$element" '{if($1 == element) {print $2}}' | sort -u | while read candidategenome
 do
@@ -410,7 +387,7 @@ candidategenome2=$( echo $candidategenome | sed 's/_//g' | awk -F "." '{print $1
 
 ##now using nucmer to align the contigs (will be used for plotting)
 ##and also use these alignments define the contigs/regions of interest to plot
-nucmer -t ${threads} --delta 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.delta 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa 2.HGT_candidates/alignments/${element}/${element}.element.fa
+nucmer -t ${threads} --delta 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.delta 2.HGT_candidates/assemblies/${candidategenome2}.fa 2.HGT_candidates/alignments/${element}/${element}.element.fa
 ##filter alignments for just the best element alignments in the genome
 ##also filter for only alignment above 80% identity and 10kb
 delta-filter -q -i ${minidentity} -l ${minsize} 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.delta > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.deltafilt
@@ -437,7 +414,7 @@ cat 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.deltaf
 
 do
 ## calculate length of contig so that the flanks are not over extended
-maxlength=$( echo "${candidatecontig}" | seqkit grep --quiet -f - 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa | grep -v ">" | tr -d '\n' | wc -c  )
+maxlength=$( echo "${candidatecontig}" | seqkit grep --quiet -f - 2.HGT_candidates/assemblies/${candidategenome2}.fa | grep -v ">" | tr -d '\n' | wc -c  )
 ##find the edges of the alignments
 edges=$( cat 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.deltafilt.paf | awk -F "\t" -v candidatecontig="$candidatecontig" '{if($6 == candidatecontig) print}' | awk -F "\t" -v flank="$flank" 'BEGIN{max=0; min=99999999999999} {if($9 > max) {max=$9}; if($8 < min) {min=$8}} END{print min-flank"\t"max+flank}' | awk '{if($1 < 0) {print 0"\t"$2} else {print}}' | awk -F "\t" -v maxlength="$maxlength" '{if($2 > maxlength) {print $1"\t"maxlength} else {print}}' | sed 's/99999999949999/0/g'  )
 ##get the species to be used as a tag in the plot
@@ -447,13 +424,13 @@ done >> 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.al
 
 
 ##now align the full contigs all against all and use this for the plotting
-nucmer -t ${threads} --delta 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.contigs.delta 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa 2.HGT_candidates/alignments/${element}/${element}.contig.fa
+nucmer -t ${threads} --delta 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.contigs.delta 2.HGT_candidates/assemblies/${candidategenome2}.fa 2.HGT_candidates/alignments/${element}/${element}.contig.fa
 ##this this alignment for the actual plotting though (pre-filtering so we can see complex regions etc)
 paftools.js delta2paf 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.contigs.delta | awk -F "\t" '{if($1 != $6) print}' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.contigs.delta.paf
 
 ## blast-all
 # run the blast of 1kb chunks against the genome with HGT candidate
-blastn -dust no -max_target_seqs 1 -max_hsps 1 -subject 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa -query ${sample}.1kbchunk.fa -outfmt 6 2>/dev/null | awk '{print $1"\t"$3"\t"($8-$7)}' | sed -E 's/[:\-]/\t/g' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv
+blastn -dust no -max_target_seqs 1 -max_hsps 1 -subject 2.HGT_candidates/assemblies/${candidategenome2}.fa -query ${sample}.1kbchunk.fa -outfmt 6 2>/dev/null | awk '{print $1"\t"$3"\t"($8-$7)}' | sed -E 's/[:\-]/\t/g' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv
 # set variables
 contig=$( echo "${coords}" | awk '{print $1}' )
 start=$(echo "${coords}" | awk '{print $2}')
@@ -462,10 +439,6 @@ end=$(echo "${coords}" | awk '{print $3}')
 echo "contig;start;end;identity;length;class" | tr ';' '\t' > 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.class.tsv
 # add starship/NA class to blast tsv
 cat 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.tsv | awk -v contig="$contig" -v start="$start" -v end="$end" '{if($1 == contig && $2 > (start-500) && $3 < (end+500)) {print $0"\tstarship"} else {print $0"\tNA"} }' >> 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.blast.class.tsv
-
-
-##remove the full genome (no need for it now)
-rm 2.HGT_candidates/alignments/${element}/${element}.${candidategenome2}.fa
 
 ##plot the alignments using gggenomes in R
 Rscriptpath=$( which gggenomes_skeleton.cargobay.R )
@@ -486,6 +459,10 @@ done
 
 done
 
+##remove the candidate genomes folder
+gzip 2.HGT_candidates/assemblies/*.fa
+
+
 ####################################################################################################################################################################################################################################################################################################################################################
 ####################################################################################################################################################################################################################################################################################################################################################
 ####################################################################################################################################################################################################################################################################################################################################################
@@ -497,7 +474,7 @@ if [[ $cleanup == "yes" ]]
 then
 ##remove sourmash database (as it usually takes up aroud 5Gb)
 rm -r 0.database/genbank-20250408-fungi-k21.zip
-
+rm -r 2.HGT_candidates/assemblies/
 fi
 
 echo "All complete; hope you enjoyed your time at cargobay"
