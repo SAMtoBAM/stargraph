@@ -477,4 +477,4 @@ rm -r 0.database/genbank-20250408-fungi-k21.zip
 rm -r 2.HGT_candidates/assemblies/
 fi
 
-echo "All complete; hope you enjoyed your time at cargobay"
+echo "All complete; hope you enjoyed your time at cargobay; E noho rā"
