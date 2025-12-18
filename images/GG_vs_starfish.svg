@@ -27,13 +27,13 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="1.4142136"
-     inkscape:cx="460.68007"
-     inkscape:cy="237.94143"
-     inkscape:window-width="1850"
-     inkscape:window-height="1016"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
+     inkscape:cx="393.85847"
+     inkscape:cy="180.31222"
+     inkscape:window-width="1551"
+     inkscape:window-height="991"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
      inkscape:current-layer="layer1"
      inkscape:pageshadow="2"
      showgrid="false" />
@@ -1117,7 +1117,7 @@
            id="tspan4-0"
            style="font-size:2.82222px;fill:#000000;fill-opacity:1;stroke-width:3.53939"
            x="15.71322"
-           y="39.076958">Genome graph PAVs</tspan></text>
+           y="39.076958">Genome graph Presence/Absence Variants (PAVs)</tspan></text>
       <circle
          style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.353939;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="path4"
@@ -1138,12 +1138,12 @@
          y="60.243629"
          id="text4-8-5"><tspan
            sodipodi:role="line"
-           id="tspan4-0-4"
            style="font-style:italic;font-size:2.82222px;fill:#000000;fill-opacity:1;stroke-width:3.53939"
            x="9.3632259"
-           y="60.243629">de-novo<tspan
+           y="60.243629"
+           id="tspan5600">de-novo <tspan
    style="font-style:normal"
-   id="tspan10"> Captain annotation</tspan></tspan></text>
+   id="tspan20334">Tyrosine Recombinase (YR) annotation</tspan></tspan></text>
     </g>
     <text
        xml:space="preserve"
@@ -1251,7 +1251,7 @@
            x="8.8208857"
            y="93.932632"><tspan
    style="font-style:italic"
-   id="tspan11">Starship</tspan>-like regions</tspan></text>
+   id="tspan11">Starship</tspan>-like regions (SLRs)</tspan></text>
       <g
          id="g7"
          transform="translate(-1.9121517,-2.6458336)">
@@ -1550,10 +1550,10 @@
          sodipodi:role="line"
          style="font-size:3.52778px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke-width:3.53939"
          x="44.222435"
-         y="10.272306"
+         y="10.272305"
          id="tspan12">O'Donnell <tspan
    style="font-style:italic;font-size:3.52778px;text-align:center;text-anchor:middle"
-   id="tspan13">et al.</tspan> 2024</tspan></text>
+   id="tspan13">et al.</tspan> 2025</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:normal;font-family:Arial;-inkscape-font-specification:Arial;text-decoration-color:#000000;fill:#000000;fill-opacity:0.245142;stroke:none;stroke-width:3.53939;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
