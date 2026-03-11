@@ -106,7 +106,7 @@ the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_
 	-i | --identifier		The identifying tag used for tyrosine recombinases; given as the -i option for starfish annotate (Default: tyr)
 
 	pggb specific inputs:
-	-i | --identity			-p option in pggb (Default: Automatically calulated using mash distances)
+	-pi | --identity		-p option in pggb (Default: Automatically calulated using mash distances)
 	-l | --length			-s option in pggb (Default: 20000 ; a conservative value increased from default pggb values)
 	-k | --kmersize			-k option in pggb (Default: 19 ; same as pggb)
 	-G | --poaparam			-G option in pggb (Default: 7919,8069; a conservative value increased from default pggb values)
