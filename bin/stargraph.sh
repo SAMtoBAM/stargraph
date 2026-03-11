@@ -105,7 +105,7 @@ case "$key" in
 	shift
 	shift
 	;;
-	-i|--identity)
+	-pi|--identity)
 	identity="$2"
 	shift
 	shift
@@ -188,7 +188,7 @@ case "$key" in
 	-i | --identifier		The identifying tag used for tyrosine recombinases; given as the -i option for starfish annotate (Default: tyr)
 
 	pggb specific inputs:
-	-i | --identity			-p option in pggb (Default: Automatically calulated using mash distances)
+	-pi | --identity		-p option in pggb (Default: Automatically calulated using mash distances)
 	-l | --length			-s option in pggb (Default: 20000 ; a conservative value increased from default pggb values)
 	-k | --kmersize			-k option in pggb (Default: 19 ; same as pggb)
 	-G | --poaparam			-G option in pggb (Default: 7919,8069; a conservative value increased from default pggb values)
@@ -241,6 +241,9 @@ elementspath=$( realpath ${elements} )
 
 #check if the files given actually exist
 [ ! -f "${assembliespath}" ] && echo "ERROR: Cannot find path to assemblies file provided by -a; check path is correct and file exists" && exit
+[ ! -f "${tyrRspath}" ] && echo "ERROR: Cannot find path to Tyrosine Recombinases file provided by -r; check path is correct and file exists" && exit
+[ ! -f "${elementspath}" ] && echo "ERROR: Cannot find path to Starship elements file provided by -e; check path is correct and file exists" && exit
+
 
 ##check if output directory already exists
 [ -d "${output}" ] && echo "ERROR: output folder already exists" && exit
@@ -277,23 +280,27 @@ echo "Step 1: Building the genome-graph"
 ##use mash triangle to generate a all vs all comparison per assembly file
 ##then use this as a proxy for nucleotide identity distances and add an increase of 5% divergence to be used for the -p option in pggb (can be quite lenient here)
 mash triangle -s 100000 -l path_to_assemblies.txt -E > ${prefix}.assemblies.mash_distances.txt 
+
+##set automatically calculated identity value
+identity2=$( awk -F "\t" '{v=(1-$3)*100-5; if(NR==1||v<min) min=v} END{print int(min)}' ${prefix}.assemblies.mash_distances.txt )
+##use automatically calculated distance parameter if not set by user
 if [[ ${identity} == "" ]]
 then
-identity=$( cat ${prefix}.assemblies.mash_distances.txt | cut -f3 | awk '{print (1-$1)*100}' | sort -n | head -n1 | awk -F "." '{print $1-5}' ) 
+identity="${identity2}"
 fi
 
 
 ##concatenate and compress the assemblies using the absolute paths to each assembly
 ##and removing all soft-masking
-cat path_to_assemblies.txt | while read genome
+while read -r genome
 do
 if [[ ${genome} =~ ".gz"$ || ${genome} =~ ".bgzip"$ || ${genome} =~ ".gzip"$ ]]
 then
 zcat ${genome} | awk '{if($1 ~ ">") {print } else {print toupper($0)}}'
 else
-cat ${genome}  | awk '{if($1 ~ ">") {print } else {print toupper($0)}}'
+awk '{if($1 ~ ">") {print } else {print toupper($0)}}' ${genome}
 fi 
-done | bgzip > ${prefix}.assemblies.fa.gz
+done < path_to_assemblies.txt | bgzip > ${prefix}.assemblies.fa.gz
 
 ##get the number of assemblies provided to be used as the -n option in pggb
 genomecount=$( cat path_to_assemblies.txt | wc -l )
