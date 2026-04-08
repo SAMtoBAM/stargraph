@@ -516,6 +516,7 @@ samtools faidx ../${prefix}.assemblies.fa.gz "${contig}" >> ${cluster}.contigs.f
 done 
 
 ##take just one of the SLRs in the cluster; one with the largest sum of flank lengths on either side or the largest (only one if they are equal)
+##at the end it makes sure to take just the first SLR even if none of them have flanks...might be the whole contigs missing...
 topSLR=$( cat ${cluster}.list.txt | while read SLR
 do
 start=$( cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $3}' )
@@ -526,7 +527,7 @@ endmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" 
 
 echo "${SLR};${startmoddiff};${endmoddiff}" | tr ';' '\t'
 
-done | awk -v flank="$flank" '{if(($2+$3) > sumflank) {sumflank=($2+$3); SLR=$1}} END{print SLR}' )
+done | awk -v flank="$flank" '{SLR=$1; if(($2+$3) > sumflank) {sumflank=($2+$3); SLR=$1}} END{print SLR}' )
 
 ##save the SLR+flank region to a temporary fasta file
 samtools faidx ${cluster}.regions_plus_flank.fa ${topSLR} > ${cluster}.regions_plus_flank.temp.fa
