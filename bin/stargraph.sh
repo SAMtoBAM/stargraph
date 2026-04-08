@@ -447,7 +447,7 @@ sourmash compare ${prefix}.SLRs.sig --max-containment --csv ${prefix}.SLRs.sig.c
 ##convert to pairwise comparisons and change all values below the kmerthreshold % to 0
 cat ${prefix}.SLRs.sig.compare.csv | tr -d '\r'  | awk -F',' 'NR==1{for(i=1;i<=NF;i++)samples[i]=$i;next}{row=NR-1;for(i=row+1;i<=NF;i++)print samples[row],samples[i],$i}' OFS='\t' | awk -F "\t" -v kmerthreshold="$kmerthreshold" '{if($3 >= kmerthreshold) {print} else {print $1"\t"$2"\t0"}}' >  ${prefix}.SLRs.sig.pairwise.tsv
 ##now use mcl to quickly find the clusters
-mcl ${prefix}.SLRs.sig.pairwise.tsv -I 1.5 --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
+mcl ${prefix}.SLRs.sig.pairwise.tsv -I 2 --abc -o ${prefix}.SLRs.sig.pairwise.mcl.txt
 ##now name the clusters and then append to the summary files
 awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.SLRs.sig.pairwise.mcl.txt > ${prefix}.SLRs.sig.pairwise.mcl.clusters.txt
 
@@ -516,6 +516,7 @@ samtools faidx ../${prefix}.assemblies.fa.gz "${contig}" >> ${cluster}.contigs.f
 done 
 
 ##take just one of the SLRs in the cluster; one with the largest sum of flank lengths on either side or the largest (only one if they are equal)
+##at the end it makes sure to take just the first SLR even if none of them have flanks...might be the whole contigs missing...
 topSLR=$( cat ${cluster}.list.txt | while read SLR
 do
 start=$( cat ../2.PAVs_to_SLRs/${prefix}.SLRs.tsv | awk -F "\t" -v SLR="$SLR" '{if($1 == SLR) print $3}' )
@@ -526,7 +527,7 @@ endmoddiff=$( cat ${cluster}.regions_plus_flank.tsv | awk -F "\t" -v SLR="$SLR" 
 
 echo "${SLR};${startmoddiff};${endmoddiff}" | tr ';' '\t'
 
-done | awk -v flank="$flank" '{if(($2+$3) > sumflank) {sumflank=($2+$3); SLR=$1}} END{print SLR}' )
+done | awk -v flank="$flank" '{SLR=$1; if(($2+$3) > sumflank) {sumflank=($2+$3); SLR=$1}} END{print SLR}' )
 
 ##save the SLR+flank region to a temporary fasta file
 samtools faidx ${cluster}.regions_plus_flank.fa ${topSLR} > ${cluster}.regions_plus_flank.temp.fa
@@ -798,7 +799,7 @@ echo "Step 5b: Clustering Starships and SLRs and generating alignment plots"
 tail -n+2 ${prefix}.starships_SLRs.pairwise_containment.tsv > temp.fa
 ##cluster all the Starships and SLRs using the same kmer similarities (containment)
 ##now use mcl to quickly find the clusters
-mcl temp.fa --abc -o ${prefix}.starships_SLRs.pairwise_containment.mcl.txt
+mcl temp.fa -I 2 --abc -o ${prefix}.starships_SLRs.pairwise_containment.mcl.txt
 rm temp.fa
 ##now name the clusters and then append to the summary files
 awk -F '\t' '{for (i=1; i <= NF; i++) {print "cluster"NR "\t" $i}}' ${prefix}.starships_SLRs.pairwise_containment.mcl.txt > ${prefix}.starships_SLRs.pairwise_containment.mcl.clusters.txt
