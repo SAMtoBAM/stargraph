@@ -920,11 +920,20 @@ nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucme
 paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6) {print}}' > ${cluster}.contigs.nucmer.paf
 
 
+if [[ -s "${cluster}.contigs.nucmer.paf" ]]
+then
+
 ##automate the production of an R script using gggenomes to plot the alignment
 ##then use gggenome with R script to create the plots
 Rscriptpath=$( which gggenomes_skeleton.stargraph.R )
 cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/5.SLR_starship_network_alignments|g" > ${cluster}.R
 Rscript ${cluster}.R
+
+else
+#no alignments found for this cluster (probably an isolated contig which comprises the entire SLR that doesn't align to the other assemblies)
+touch ${cluster}.NO_ALIGNMENTS.txt
+fi
+
 
 ##remove some of the fasta files
 rm ${cluster}.contigs.fa
