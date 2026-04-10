@@ -565,7 +565,7 @@ do
 cat ${cluster}.regions_plus_flank.absent.nucmer.paf | awk -F "\t" -v tempcontig="$tempcontig" '{if($1 == tempcontig && $11 > 10000) sum=sum+$11} END{print tempcontig"\t"sum}'
 done | sort -k2nr | head -n2 | awk '{print $1}' > ${cluster}.absent.contigs.txt
 
-##extract the contigs
+##extract the contigs (if they exist)
 cat ${cluster}.absent.contigs.txt | while read insertioncontig
 do
 samtools faidx ${cluster}.absent.fa "${insertioncontig}"
@@ -640,6 +640,8 @@ cat ${cluster}.absent.contigs.fa >> ${cluster}.contigs.fa
 nucmer -t ${threads} --maxmatch --minmatch 100 --delta  ${cluster}.contigs.nucmer.delta ${cluster}.contigs.fa ${cluster}.contigs.fa
 paftools.js delta2paf ${cluster}.contigs.nucmer.delta | awk -F "\t" '{if($1 != $6 && $11 > 750) {print}}' > ${cluster}.contigs.nucmer.paf
 
+if [[ -s "${cluster}.contigs.nucmer.paf" ]]
+then
 
 ##automate the production of an R script using gggenomes to plot the alignment
 ##then use gggenome with R script to create the plots
@@ -647,11 +649,15 @@ Rscriptpath=$( which gggenomes_skeleton.stargraph.R )
 cat ${Rscriptpath} | sed "s/CLUSTER/${cluster}/g" | sed "s|PATHTOOUTPUT|${outputpath}/3.SLR_plots|g" > ${cluster}.R
 Rscript ${cluster}.R
 
+else
+#no alignments found for this cluster (probably an isolated contig which comprises the entire SLR that doesn't align to the other assemblies)
+touch ${cluster}.NO_ALIGNMENTS.txt
+fi
+
 ##remove some of the fasta files
 rm ${cluster}.contigs.fa
 rm ${cluster}.absent.*
 rm ${cluster}.contigs.nucmer.delta
-
 done
 
 ##cleanup the default printing of Rplots
