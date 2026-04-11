@@ -2,7 +2,7 @@
     <img src="https://github.com/SAMtoBAM/stargraph/blob/main/logo/stargraph_logo.png" width=100%>
 </p>
 
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17094657.svg)](https://doi.org/10.5281/zenodo.17094657)
+[![Zenodo DOI](https://zenodo.org/badge/992224579.svg)](https://doi.org/10.5281/zenodo.15616299)
 [![Anaconda_version](https://anaconda.org/samtobam/stargraph/badges/version.svg)](https://anaconda.org/samtobam/stargraph)
 [![Anaconda_platforms](https://anaconda.org/samtobam/stargraph/badges/platforms.svg)](https://anaconda.org/samtobam/stargraph)
 [![Anaconda_downloads](https://anaconda.org/samtobam/stargraph/badges/downloads.svg)](https://anaconda.org/samtobam/stargraph)
@@ -127,14 +127,19 @@ the _Starship_ annotations (_starfish_output/elementFinder/\*.elements.ann.feat_
 
 The final output **_stargraph_output/${prefix}.starships_SLRs.tsv_** contains the final results of ```stargraph```; a nonredundant list of _Starships_ and _Starship_-like elements <br/>
 Additionally: <br/>
-**1.*.pggb** : all genome-graph output from both pggb and odgi <br/>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; information about the identified regions of Presence/Absence variation <br/>
-**2.PAVs_to_SLRs** : information on the elevation of PAVs to SLRs using the provided tyrosine recombinase locations <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; contains information on the elevation of PAVs not elevated to SLR status but containing DUF3723 or MYB genes <br/>
-**3.SLR_plots** : plots showing the alignment of SLRs clustered based on k-mer max-containment, including one insertion site per cluster <br/>
-**4.SLR_starship_combination** : information on generating the non-redundant dataset combining the provided _Starships_ with the newly identified SLRs <br/>
-**5.SLR_starship_network_alignments** : plots showing the alignment of _Starships_ and SLRs clustered together based on k-mer max-containment <br/>
-&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; plots of networks using both Jaccard similarity and containment <br/>
+**1.*.pggb** : <br/>
+All genome-graph output from both pggb and odgi <br/>
+Information about the identified regions of Presence/Absence variation <br/>
+**2.PAVs_to_SLRs** : <br/>
+Information on the elevation of PAVs to SLRs using the provided tyrosine recombinase locations <br/>
+Information on the elevation of PAVs not elevated to SLR status but containing DUF3723 or MYB genes <br/>
+**3.SLR_plots** : <br/>
+Plots showing the alignment of SLRs clusters, including one insertion site per cluster <br/>
+**4.SLR_starship_combination** : <br/>
+Information on generating the non-redundant dataset combining the provided _Starships_ with the newly identified SLRs <br/>
+**5.SLR_starship_network_alignments** : <br/>
+Plots showing the alignment of the combined _Starships_ and SLRs clusters <br/>
+Plots of networks using both Jaccard similarity and containment <br/>
 
 
 # COMING SOON STEP 6 Running allstars 
