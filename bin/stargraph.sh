@@ -308,7 +308,8 @@ genomecount=$( cat path_to_assemblies.txt | wc -l )
 samtools faidx ${prefix}.assemblies.fa.gz
 
 ##now build the genome graph
-pggb -i ${prefix}.assemblies.fa.gz -o 1.${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam}
+pggb -i ${prefix}.assemblies.fa.gz -o 1.${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam} > pggb.log
+mv pggb.log  1.${prefix}.pggb
 
 ##move in the output folder so we can try use this graph to extract Starship regions
 cd 1.${prefix}.pggb
