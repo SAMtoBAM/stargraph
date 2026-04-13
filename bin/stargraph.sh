@@ -58,7 +58,7 @@ elements=""
 threads="1"
 identifier="tyr"
 identity=""
-length="20000"
+length="10000"
 kmersize="19"
 separator="_"
 window="1000"
@@ -189,7 +189,7 @@ case "$key" in
 
 	pggb specific inputs:
 	-pi | --identity		-p option in pggb (Default: Automatically calulated using mash distances)
-	-l | --length			-s option in pggb (Default: 20000 ; a conservative value increased from default pggb values)
+	-l | --length			-s option in pggb (Default: 10000 ; a mildly conservative value increased from default pggb values)
 	-k | --kmersize			-k option in pggb (Default: 19 ; same as pggb)
 	-G | --poaparam			-G option in pggb (Default: 7919,8069; a conservative value increased from default pggb values)
 
