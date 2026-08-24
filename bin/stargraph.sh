@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-version="v1.0.0"
+version="v1.0.1"
 
 #####################################################################################
 ############# STEP -1. CREATING THE ENVIRONMENT. NOT ACTUALLY USED NOW ##############
@@ -58,7 +58,7 @@ elements=""
 threads="1"
 identifier="tyr"
 identity=""
-length="20000"
+length="10000"
 kmersize="19"
 separator="_"
 window="1000"
@@ -189,7 +189,7 @@ case "$key" in
 
 	pggb specific inputs:
 	-pi | --identity		-p option in pggb (Default: Automatically calulated using mash distances)
-	-l | --length			-s option in pggb (Default: 20000 ; a conservative value increased from default pggb values)
+	-l | --length			-s option in pggb (Default: 10000 ; a mildly conservative value increased from default pggb values)
 	-k | --kmersize			-k option in pggb (Default: 19 ; same as pggb)
 	-G | --poaparam			-G option in pggb (Default: 7919,8069; a conservative value increased from default pggb values)
 
@@ -308,7 +308,8 @@ genomecount=$( cat path_to_assemblies.txt | wc -l )
 samtools faidx ${prefix}.assemblies.fa.gz
 
 ##now build the genome graph
-pggb -i ${prefix}.assemblies.fa.gz -o 1.${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam}
+pggb -i ${prefix}.assemblies.fa.gz -o 1.${prefix}.pggb -t ${threads} -p ${identity} -s ${length} -m -S -n ${genomecount} -k ${kmersize} -Y ${separator} -G ${poaparam} > pggb.log
+mv pggb.log  1.${prefix}.pggb
 
 ##move in the output folder so we can try use this graph to extract Starship regions
 cd 1.${prefix}.pggb
@@ -943,6 +944,9 @@ done
 
 
 cd ..
+
+
+echo "Stargraph complete; E noho rā"
 
 ######################################################################################################################################################################################################################################
 ######################################################################################################################################################################################################################################

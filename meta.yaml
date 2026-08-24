@@ -1,6 +1,6 @@
 package:
   name: stargraph
-  version: "1.0.0"  # Change this to your desired version
+  version: "1.0.1"  # Change this to your desired version
 
 source:
   git_url: https://github.com/samtobam/stargraph.git
