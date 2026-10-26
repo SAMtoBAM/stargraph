@@ -206,9 +206,13 @@ mkdir 0.database
 ##therefore using these links for now
 
 ##get the fungal lineages from the sourmash provided db
-curl -JLO -s https://farm.cse.ucdavis.edu/~ctbrown/sourmash-db/genbank-2025.04/lineages.fungi.csv 
+#curl -JLO -s https://farm.cse.ucdavis.edu/~ctbrown/sourmash-db/genbank-2025.04/lineages.fungi.csv 
 ##get the database from april 2025 with 1000 scalling and kmer 21
-curl -JLO -s https://farm.cse.ucdavis.edu/~ctbrown/sourmash-db/genbank-2025.04/genbank-20250408-fungi-k21.zip 
+#curl -JLO -s https://farm.cse.ucdavis.edu/~ctbrown/sourmash-db/genbank-2025.04/genbank-20250408-fungi-k21.zip 
+
+####above repo stopped working frequently so downloaded the data myself and put on this zenodo
+wget -c "https://zenodo.org/records/23673074/files/genbank-20250408-fungi-k21.zip?download=1" -O genbank-20250408-fungi-k21.zip
+wget -c "https://zenodo.org/records/23673074/files/lineages.fungi.csv?download=1" -O lineages.fungi.csv
 
 mv lineages.fungi.csv  0.database/
 mv genbank-20250408-fungi-k21.zip 0.database/
