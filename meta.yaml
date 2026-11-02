@@ -7,13 +7,10 @@ source:
   git_rev: main
    
 build:
-  number: 0 # Increment with each new build
+  number: 1 # Increment with each new build
   scripts:
     - bin/starfish
     - bin/cnef
-
-  ##Run after stargraph has been installed to install geneML
-  post-link: post-link.sh
 
 requirements:
   build:
